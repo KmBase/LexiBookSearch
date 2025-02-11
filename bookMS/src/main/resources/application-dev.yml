@@ -1,0 +1,57 @@
+server:
+  port: 9090
+  servlet:
+    context-path: /
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://192.168.50.88:3306/LPMS?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+    username: root
+    password: root
+  data:
+    redis:
+      host: 192.168.50.88
+      port: 6379
+      password: YourStrongRedisPassword123
+      database: 1
+      timeout: 10000
+      client-type: lettuce
+      connect-timeout: 5000
+      lettuce:
+        pool:
+          max-active: 8
+          max-wait: -1
+          max-idle: 8
+          min-idle: 0
+          time-between-eviction-runs: 10s
+        shutdown-timeout: 100ms
+  elasticsearch:
+    uris: http://192.168.50.88:9200
+    username: 
+    password: 
+    connection-timeout: 5s
+    socket-timeout: 60s
+
+minio:
+  endpoint: 192.168.50.88:9000
+  rootUser: ${MINIO_ROOT_USER:minioadmin}
+  rootPassword: ${MINIO_ROOT_PASSWORD:minioadmin}
+  bucketName: lpms
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+  level:
+    org.springframework.web: DEBUG
+    org.hibernate: DEBUG
+    org.apache.ibatis: DEBUG
+    org.apache.ibatis.spring: DEBUG
+    org.mybatis: DEBUG
+    org.mybatis.spring.mapper: DEBUG
+    org.mybatis.spring.boot: DEBUG
+    org.mybatis.spring.boot.autoconfigure: DEBUG
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl 
