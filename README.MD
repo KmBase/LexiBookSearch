@@ -231,12 +231,7 @@ docker-compose logs -f
 java -version
 ```
 
-2. 配置MySQL
-```bash
-# 创建数据库
-mysql -u root -p
-CREATE DATABASE LPMS CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
+2. 配置application.yml
 
 3. 编译打包
 ```bash
@@ -244,31 +239,7 @@ cd bookMS
 mvn clean package -DskipTests
 ```
 
-4. 配置application.yml
-```yaml
-spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/LPMS?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
-    username: root
-    password: your_password
-  
-  redis:
-    host: localhost
-    port: 6379
-    password: your_redis_password
-
-  elasticsearch:
-    uris: http://localhost:9200
-    username: elastic
-    password: your_es_password
-
-minio:
-  endpoint: http://localhost:9000
-  accessKey: your_minio_user
-  secretKey: your_minio_password
-```
-
-5. 运行后端服务
+4. 运行后端服务
 ```bash
 java -jar target/bookms.jar
 ```
@@ -278,7 +249,8 @@ java -jar target/bookms.jar
 1. 安装依赖
 ```bash
 cd bookApp
-npm install
+npm install 
+或 yarn install
 ```
 
 2. 配置环境变量
@@ -300,31 +272,14 @@ npm run build
 ```
 
 4. 配置Nginx
-```nginx
-server {
-    listen 80;
-    server_name localhost;
-
-    location / {
-        root /path/to/bookApp/dist;
-        try_files $uri $uri/ /index.html;
-        index index.html;
-    }
-
-    location /api {
-        proxy_pass http://localhost:9090;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-}
-```
+> 因本项目为前后端分离项目，注意配置相关代理，否则无法访问后端API；可参考默认配置；
 
 ## 开发指南
 
 ### 后端开发
 1. 在IDE中导入bookMS项目
 2. 配置application.yml中的数据库等连接信息
-3. 运行BookMsApplication主类
+3. 运行LvPiApplication主类
 
 ### 前端开发
 1. 进入bookApp目录
@@ -373,7 +328,6 @@ yarn dev
 │   │   └── global.less      # 全局样式
 │   ├── Dockerfile           # 前端Dockerfile
 │   ├── package.json         # 依赖配置
-│   └── tailwind.config.js   # TailwindCSS配置
 │
 ├── docker/                  # Docker相关配置
 │   ├── config/              # 配置文件
