@@ -403,4 +403,4 @@ yarn dev
 - [AGPLv3 许可证](LICENSE)  
 - [附加商业条款](NOTICE)
 
-如需商业授权，请联系：well_gone@163.com
+如需商业授权，请联系：law_pi@163.com
