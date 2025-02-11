@@ -92,9 +92,48 @@
 ## 环境要求
 
 ### 硬件要求
-- CPU: 2核心及以上
-- 内存: 最小4GB，推荐8GB及以上
-- 硬盘: 50GB及以上（取决于存储的文件数量）
+
+#### 最小硬件配置建议
+CPU：
+- Elasticsearch: 至少 2 核心
+- MySQL: 至少 1 核心
+- 其他服务 (Redis, MinIO, Backend, Frontend): 共需 2 核心
+- 总计最小需求：4-6 核心 CPU
+
+内存 (RAM)：
+- Elasticsearch: 至少 2GB（通过 ES_JAVA_OPTS 配置）
+- MySQL: 至少 1GB
+- Redis: 512MB
+- MinIO: 512MB
+- Backend (Java 应用): 1GB
+- Frontend + Nginx: 512MB
+- 总计最小需求：6GB RAM
+
+存储空间：
+- Elasticsearch 数据: 至少 10GB
+- MySQL 数据: 至少 5GB
+- Redis 数据: 1GB
+- MinIO 对象存储: 10GB（取决于文件存储需求）
+- 应用日志和其他: 2GB
+- 总计最小需求：30GB 存储空间
+
+网络：
+- 建议至少 100Mbps 带宽
+- 所有服务都在同一个 bridge 网络中
+
+#### 推荐配置
+为了获得更好的性能和稳定性，建议：
+- CPU: 8 核心
+- 内存: 16GB RAM
+- 存储: 100GB SSD
+- 网络: 1Gbps
+
+#### 注意事项
+- Elasticsearch 是最消耗资源的服务，特别是内存使用
+- 如果有大量并发用户，应该相应增加内存和 CPU
+- 如果需要存储大量文件，需要相应增加 MinIO 的存储空间
+- 建议使用 SSD 存储以提高性能，特别是对 Elasticsearch 和 MySQL
+- 需要根据实际使用场景（并发用户数、数据量、文件存储需求等）来调整这些配置。
 
 ### 软件要求
 - Docker 20.10.x 及以上（推荐部署方式）
