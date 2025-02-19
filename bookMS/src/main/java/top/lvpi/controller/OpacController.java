@@ -4,6 +4,9 @@ import top.lvpi.common.BaseResponse;
 import top.lvpi.common.ResultUtils;
 import top.lvpi.service.BookService;
 import org.springframework.web.bind.annotation.*;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import java.util.Map;
 import java.util.UUID;
@@ -12,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
 @RequestMapping("/api/opac")
+@Tag(name = "OPAC管理", description = "OPAC相关接口")
 public class OpacController {
 
     @Resource
@@ -21,12 +25,14 @@ public class OpacController {
     private static final Map<String, String> taskStatusMap = new ConcurrentHashMap<>();
 
     @GetMapping("/{id}")
+    @Operation(summary = "获取OPAC信息")
     public BaseResponse<String> getOpacInfo(@PathVariable Long id) {
         String result = bookService.getAndSaveOpacInfo(id);
         return ResultUtils.success(result);
     }
 
     @PostMapping("/batch")
+    @Operation(summary = "批量获取OPAC信息")
     public BaseResponse<String> batchGetOpacInfo() {
         String taskId = UUID.randomUUID().toString();
         CompletableFuture.runAsync(() -> {
@@ -37,6 +43,7 @@ public class OpacController {
     }
 
     @GetMapping("/batch/status/{taskId}")
+    @Operation(summary = "获取批量任务状态")
     public BaseResponse<String> getBatchStatus(@PathVariable String taskId) {
         String status = taskStatusMap.get(taskId);
         if (status == null) {

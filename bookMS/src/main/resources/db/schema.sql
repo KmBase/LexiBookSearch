@@ -110,3 +110,53 @@ CREATE TABLE IF NOT EXISTS lp_book_topic (
     INDEX idx_book_id(book_id),
     INDEX idx_topic_id(topic_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='书籍与主题关联表';
+
+-- 笔记表 (lp_note)
+CREATE TABLE `lp_note` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '唯一标识，自增主键',
+  `content` TEXT NOT NULL COMMENT '笔记内容',
+  `source_name` VARCHAR(255) COMMENT '来源书籍名称',
+  `source_press` VARCHAR(255) COMMENT '出版社',
+  `source_author` VARCHAR(255) COMMENT '作者',
+  `source_page_size` VARCHAR(255) COMMENT '页码',
+  `source_publication_date` DATE COMMENT '出版日期',
+  `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间，默认值为当前时间戳',
+  `modified_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间，默认值为当前时间戳，并在更新时自动更新',
+  `user_id` BIGINT COMMENT '创建笔记的用户ID（可选，如果需要关联用户）',
+  `source_url` VARCHAR(1024) COMMENT '来源 URL（可选，如果笔记来自网络资源）',
+  `tags` VARCHAR(255) COMMENT '标签（可选，用于分类和搜索）',
+  `parent_id` BIGINT COMMENT '父级笔记ID',
+  `order_num` INT COMMENT '排序字段',
+  PRIMARY KEY (`id`),
+  INDEX `idx_source_name` (`source_name`), -- 为来源书籍名称创建索引，加快按来源搜索的速度
+  INDEX `idx_create_time` (`create_time`), -- 为创建时间创建索引，加快按时间排序的速度
+  INDEX `idx_parent_id` (`parent_id`) -- 为父ID创建索引，加快树形结构查询速度
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='笔记表';
+
+-- 检索报告表 (lp_search_report)
+CREATE TABLE `lp_search_report` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '唯一标识，自增主键',
+  `title` VARCHAR(255) NOT NULL COMMENT '报告标题',
+  `type` VARCHAR(50) COMMENT '报告类型',
+  `search_subject` INT COMMENT '是否设为检索菜单子选项',
+  `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `modified_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+  `user_id` BIGINT COMMENT '创建报告的用户ID（可选）',
+  PRIMARY KEY (`id`),
+  INDEX `idx_title` (`title`), -- 为标题创建索引
+  INDEX `idx_create_time` (`create_time`) -- 为创建时间创建索引
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='检索报告表';
+
+-- 笔记与检索报告关系表 (lp_note_report_relate)
+CREATE TABLE `lp_note_report_relate` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '唯一标识，自增主键',
+  `note_id` BIGINT NOT NULL COMMENT '笔记ID，外键关联到 lp_note 表',
+  `report_id` BIGINT NOT NULL COMMENT '检索报告ID，外键关联到 search_report 表',
+  `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `user_id` BIGINT COMMENT '创建报告的用户ID（可选）',
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`note_id`) REFERENCES `lp_note` (`id`),
+  FOREIGN KEY (`report_id`) REFERENCES `lp_search_report` (`id`),
+  UNIQUE INDEX `idx_note_report` (`note_id`, `report_id`) -- 创建唯一索引，防止重复关联
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='笔记与检索报告关系表';
+

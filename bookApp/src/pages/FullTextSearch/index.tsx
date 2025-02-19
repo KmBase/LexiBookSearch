@@ -8,7 +8,7 @@ import {
   Configure,
 } from 'react-instantsearch';
 
-import { Button, Card, Col, Drawer, Empty, Row, Tooltip } from 'antd';
+import { Button, Card, Col, Drawer, Empty, message, Row, Tooltip } from 'antd';
 import React, { useState, useEffect } from 'react';
 import { FilterOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 
@@ -23,6 +23,8 @@ import CustomPagination from "./components/CustomPagination";
 import CustomHits from './components/CustomHits';
 import CustomHierarchicalMenu from './components/CustomHierarchicalMenu';
 import AIAssistant from '@/components/AIAssistant';
+import { createNote } from '../Note/service';
+import ContextMenu from './components/ContextMenu';
 
 // 获取环境变量，带默认值
 const getEnvVar = (key: keyof ImportMetaEnv, defaultValue: string = ''): string => {
@@ -319,7 +321,33 @@ const FullTextSearch = () => {
   const [currentFileUrl, setCurrentFileUrl] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
   const [drawerVisible, setDrawerVisible] = useState(false);
+  const [userId, setUserId] = useState<string>('');
+  const [contextMenu, setContextMenu] = useState({
+    visible: false,
+    x: 0,
+    y: 0,
+    selectedText: '',
+  });
 
+  const [currentBookInfo, setCurrentBookInfo] = useState({
+    title: '',
+    publisher: '',
+    publicationYear: '',
+    author: '',
+    pageNum: 0,
+  });
+
+    // 初始化时获取用户ID
+    useEffect(() => {
+      const storedUserId = localStorage.getItem('userId');
+      if (!storedUserId) {
+        message.error('获取用户信息失败，请重新登录');
+        window.location.href = '/user/login';
+        return;
+      }
+      setUserId(storedUserId);
+    }, []);
+    
   // 当currentFileUrl改变时获取预览地址
   useEffect(() => {
     const fetchPreviewUrl = async () => {
@@ -352,7 +380,74 @@ const FullTextSearch = () => {
     }
     //设定指定页,需将page_num转换为int
     setCurrentPage(parseInt(hit.page_num))
+
+    // 更新当前图书信息
+    setCurrentBookInfo({
+      title: hit.book_title,
+      publisher: hit.publisher,
+      publicationYear: hit.publication_year,
+      author: hit.author,
+      pageNum: parseInt(hit.page_num),
+    });
   };
+
+  
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const selection = window.getSelection();
+    const selectedText = selection?.toString().trim();
+
+    if (selectedText) {
+      setContextMenu({
+        visible: true,
+        x: e.clientX,
+        y: e.clientY,
+        selectedText,
+      });
+    }
+  };
+
+  const handleAddToNote = async (text: string, bookInfo: any,reportId:number) => {
+    try {
+      const noteData = {
+        note: {
+          content: text,
+          sourceName: bookInfo.title,
+          sourcePress: bookInfo.publisher,
+          sourcePublicationDate: bookInfo.publicationYear ? new Date(bookInfo.publicationYear).toISOString().split('T')[0] : undefined,
+          sourceAuthor: bookInfo.author,
+          sourcePageSize: bookInfo.pageNum,
+          orderNum: 9999,
+          createTime: new Date().toISOString(),
+          modifiedTime: new Date().toISOString(),
+          userId: userId, 
+          parentId: 0,
+        },
+        reportId: reportId
+      };
+
+      const response = await createNote(noteData);
+      if (response.code === 0) {
+        message.success('笔记添加成功');
+      } else {
+        message.error(response.message || '笔记添加失败');
+      }
+    } catch (error) {
+      message.error('笔记添加失败');
+      console.error('添加笔记失败:', error);
+    }
+  };
+
+  const handleCloseContextMenu = () => {
+    setContextMenu({ ...contextMenu, visible: false });
+  };
+
+  useEffect(() => {
+    document.addEventListener('click', handleCloseContextMenu);
+    return () => {
+      document.removeEventListener('click', handleCloseContextMenu);
+    };
+  }, []);
 
   return (
     <>
@@ -468,11 +563,24 @@ const FullTextSearch = () => {
         </Col>
         <Col span={9}>
           {currentFileUrl !== null && previewUrl ? (
-            <div style={{ height: '755px', width: '650px' }}>
+            <div 
+              style={{ height: '755px', width: '650px' }}
+              onContextMenu={handleContextMenu}
+            >
               <PDFView
                 file={'/api3/'+previewUrl}
                 searchText={currentKeyWord}
                 pageNum={currentPage}
+              />
+              <ContextMenu
+                visible={contextMenu.visible}
+                x={contextMenu.x}
+                y={contextMenu.y}
+                userId={userId}
+                selectedText={contextMenu.selectedText}
+                bookInfo={currentBookInfo}
+                onClose={handleCloseContextMenu}
+                onAddToNote={handleAddToNote}
               />
             </div>
           ) : (

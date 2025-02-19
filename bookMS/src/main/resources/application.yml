@@ -49,6 +49,7 @@ minio:
   rootUser: ${MINIO_ROOT_USER:minioadmin}
   rootPassword: ${MINIO_ROOT_PASSWORD:minioadmin}
   bucketName: lpms
+  expiry: 86400
 
 sa-token:
   token-name: token

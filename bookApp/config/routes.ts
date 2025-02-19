@@ -120,6 +120,12 @@ export default [
     component: './FullTextSearch'
   },
   {
+    name: '阅读笔记',
+    path: '/note',
+    icon: 'ToolOutlined',
+    component: './Note',
+  }, 
+  {
     path: '/',
     redirect: '/welcome',
   },

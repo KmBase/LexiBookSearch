@@ -22,7 +22,7 @@ import {
   DeleteOutlined,
   EditOutlined,
 } from '@ant-design/icons';
-import { Badge, Button, Space, message, Modal, FloatButton, type GetProp, Avatar, Input } from 'antd';
+import { Badge, Button, Space, message, Modal, FloatButton, type GetProp, Avatar, Input, Select, Tooltip } from 'antd';
 import { streamChatCompletion } from '@/services/deepseek';
 import MarkdownIt from 'markdown-it';
 
@@ -210,6 +210,7 @@ const promptsItems: GetProp<typeof Prompts, 'items'> = [
   {
     key: '1',
     label: renderTitle(<BookOutlined style={{ color: '#1890FF' }} />, '阅读理解'),
+    disabled: true,
     description: '帮助理解和分析阅读内容',
     children: [
       {
@@ -229,6 +230,7 @@ const promptsItems: GetProp<typeof Prompts, 'items'> = [
   {
     key: '2',
     label: renderTitle(<FileTextOutlined style={{ color: '#52C41A' }} />, '内容分析'),
+    disabled: true,
     description: '深入分析和对比文本内容',
     children: [
       {
@@ -248,6 +250,7 @@ const promptsItems: GetProp<typeof Prompts, 'items'> = [
   {
     key: '3',
     label: renderTitle(<QuestionCircleOutlined style={{ color: '#FF4D4F' }} />, '笔记总结'),
+    disabled: true,
     description: '生成笔记和知识点总结',
     children: [
       {
@@ -267,6 +270,7 @@ const promptsItems: GetProp<typeof Prompts, 'items'> = [
   {
     key: '4',
     label: renderTitle(<RobotOutlined style={{ color: '#722ED1' }} />, '知识应用'),
+    disabled: true,
     description: '知识迁移和实践应用',
     children: [
       {
@@ -290,21 +294,25 @@ const senderPromptsItems: GetProp<typeof Prompts, 'items'> = [
     key: '1',
     description: '阅读理解',
     icon: <BookOutlined style={{ color: '#1890FF' }} />,
+    disabled: true,
   },
   {
     key: '2',
     description: '内容分析',
     icon: <FileTextOutlined style={{ color: '#52C41A' }} />,
+    disabled: true,
   },
   {
     key: '3',
     description: '笔记总结',
     icon: <QuestionCircleOutlined style={{ color: '#FF4D4F' }} />,
+    disabled: true,
   },
   {
     key: '4',
     description: '知识应用',
     icon: <RobotOutlined style={{ color: '#722ED1' }} />,
+    disabled: true,
   },
 ];
 
@@ -356,6 +364,12 @@ const AIAssistant: React.FC = () => {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editingConversation, setEditingConversation] = useState<ConversationItem | null>(null);
   const [newConversationName, setNewConversationName] = useState('');
+  const [selectedModel, setSelectedModel] = useState('DeepSeek-V3');
+
+  const modelOptions = [
+    { label: 'DeepSeek-V3', value: 'deepseek-chat' },
+    { label: 'DeepSeek-R1', value: 'deepseek-reasoner' },
+  ];
 
   const handleSend = async (content: string) => {
     try {
@@ -383,6 +397,7 @@ const AIAssistant: React.FC = () => {
             .concat(userMessage)
             .map((msg) => ({ role: msg.status === 'local' ? 'user' : 'assistant', content: msg.message })),
           stream: true,
+          model: selectedModel,
         },
         (text) => {
           // 更新助手消息的内容
@@ -517,8 +532,8 @@ const AIAssistant: React.FC = () => {
       <Welcome
         variant="borderless"
         icon={<RobotOutlined style={{ fontSize: 48, color: '#52c41a' }} />}
-        title="AI 助手"
-        description="我是您的智能助手，可以帮您解决阅读书籍过程中遇到的问题。"
+        title="律π 助手"
+        description={<span style={{ color: 'blue', fontSize: '16px' }}>Prompt功能开发中... 目前仅支持文本对话</span>}
       />
       <Prompts
         title="您需要什么帮助？"
@@ -605,7 +620,7 @@ const AIAssistant: React.FC = () => {
   const logoNode = (
     <div className={styles.logo}>
       <RobotOutlined style={{ fontSize: 24, marginRight: 8 }} />
-      <span>AI 助手</span>
+      <span>律π 助手</span>
     </div>
   );
 
@@ -661,6 +676,20 @@ const AIAssistant: React.FC = () => {
                 menu={menuConfig}
                 onActiveChange={(key: string) => setActiveKey(key)}
               />
+            </div>
+            <div style={{fontSize: '16px',fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 12px' }}>
+              <span>大模型：</span>
+              <Select
+                defaultValue={selectedModel}
+                onChange={setSelectedModel}
+                style={{ width: 180, marginLeft: 'auto' }}
+              >
+                {modelOptions.map(option => (
+                  <Select.Option key={option.value} value={option.value}>
+                    {option.label}
+                  </Select.Option>
+                ))}
+              </Select>
             </div>
           </div>
           <div className={styles.chat}>

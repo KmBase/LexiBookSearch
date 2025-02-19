@@ -28,6 +28,10 @@ export async function getInitialState(): Promise<{
       }
 
       const currentUser = await getCurrentUser();
+      // 将用户ID持久化到localStorage
+      if (currentUser.userId) {
+        localStorage.setItem('userId', currentUser.userId.toString());
+      }
       return currentUser;
     } catch (error) {
       history.push(loginPath);
