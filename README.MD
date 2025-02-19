@@ -157,8 +157,8 @@ CPU：
 
 #### 1. 克隆项目
 ```bash
-git clone https://github.com/wellgone/BookMS.git
-cd BookMS
+git clone https://github.com/wellgone/LexiBookSearch.git
+cd LexiBookSearch
 ```
 
 #### 2. 环境配置
@@ -393,6 +393,16 @@ yarn dev
 
 ## 开源许可与商用授权声明
 
-本项目（律π）采用 **MIT 许可协议** 进行开源，允许所有开发者在符合 MIT 许可协议条款的前提下对源代码进行使用、复制、修改和分发（包括个人和非商业用途）。但对于商业用途（包括但不限于盈利性软件、商业服务等），必须经过作者的单独授权后方可使用。
+本项目采用 **AGPLv3 协议** 进行开源，并附加以下商业条款：
 
-更多详细信息请参见 [LICENSE](LICENSE) 文件（其中包含带有 Commons Clause 附加条款的详细说明）。
+- ✅ 允许个人用户自由使用、修改和分发
+- ✅ 必须保留原始版权声明和许可证文件
+- ⚠️ 商业使用（包括但不限于集成到SaaS平台、商业解决方案、盈利性服务等）必须获得书面授权
+- ⚠️ 禁止去除/修改原始版权声明
+- ⚠️ 禁止用于违法用途
+
+完整授权条款请参见：
+- [AGPLv3 许可证](LICENSE)  
+- [附加商业条款](NOTICE)
+
+如需商业授权，请联系：law_pi@163.com
