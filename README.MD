@@ -22,7 +22,9 @@
 - [x] PDF文件全文检索
 - [x] PDF文件关键词高亮显示
 - [x] 接入AI大模型对话-DeepSeek
-- [ ] 笔记管理，包括笔记导出
+- [x] 检索报告、笔记管理
+- [ ] 检索报告导出
+- [ ] Prompt提示词管理，与笔记联动
 - [ ] 结合AI大模型，实现检索报告的自动生成
 
 ## demo截图
@@ -155,7 +157,7 @@ CPU：
 
 #### 1. 克隆项目
 ```bash
-git clone https://github.com/your-repo/BookMS.git
+git clone https://github.com/wellgone/BookMS.git
 cd BookMS
 ```
 
