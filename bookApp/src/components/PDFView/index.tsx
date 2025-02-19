@@ -63,15 +63,19 @@ const PDFView = (props: { file:string, searchText:string, pageNum:number } )=> {
     setPageNum(props.pageNum || 1);
   }
 
-  //当props参数变化时设置相关数据
+  //监视file 和 searchText 参数变化时设置相关数据
   useEffect(() => {
     setFile(props.file);
-    setPageNum(props.pageNum);
     if (props.searchText!=null && props.searchText!=''){
       setSearchText(props.searchText);
     }
-    
-  }, [props]);
+  }, [props.file, props.searchText]);
+
+  // 单独监视pageNum的初始化
+  useEffect(() => {
+    setPageNum(props.pageNum);
+  }, [props.pageNum]);
+
   // @ts-ignore
   return (
     <div className="Example__container__document" ref={setContainerRef}>
