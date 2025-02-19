@@ -533,7 +533,7 @@ const AIAssistant: React.FC = () => {
         variant="borderless"
         icon={<RobotOutlined style={{ fontSize: 48, color: '#52c41a' }} />}
         title="律π 助手"
-        description={<span style={{ color: 'blue', fontSize: '16px' }}>Prompt功能开发中... 目前仅支持文本对话</span>}
+        description={<span style={{ color: 'red', fontSize: '16px' }}>Prompt功能正在开发中... 目前仅支持文本对话</span>}
       />
       <Prompts
         title="您需要什么帮助？"

@@ -39,7 +39,8 @@ function highlightPattern(text, pattern) {
 
 const PDFView = (props: { file:string, searchText:string, pageNum:number } )=> {
   const [file, setFile] = useState<PDFFile>(null);
-  const [pageNum, setPageNum] = useState<number>();
+  const [pageNum, setPageNum] = useState<number>(1);
+  const [numPages, setNumPages] = useState<number>(1);
   const [containerRef, setContainerRef] = useState<HTMLElement | null>(null);
   const [containerWidth, setContainerWidth] = useState<number>();
   const [searchText, setSearchText] = useState(null);
@@ -58,16 +59,18 @@ const PDFView = (props: { file:string, searchText:string, pageNum:number } )=> {
   );
 
   function onDocumentLoadSuccess({ numPages: nextNumPages }: PDFDocumentProxy): void {
-    setPageNum(pageNum);
+    setNumPages(nextNumPages);
+    setPageNum(props.pageNum || 1);
   }
 
   //当props参数变化时设置相关数据
   useEffect(() => {
     setFile(props.file);
-    if (props.searchText!==null && props.searchText!==''){
+    setPageNum(props.pageNum);
+    if (props.searchText!=null && props.searchText!=''){
       setSearchText(props.searchText);
     }
-    setPageNum(props.pageNum);
+    
   }, [props]);
   // @ts-ignore
   return (
@@ -78,21 +81,30 @@ const PDFView = (props: { file:string, searchText:string, pageNum:number } )=> {
           pageNumber={pageNum}
           width={containerWidth ? Math.min(containerWidth, maxWidth) : maxWidth}
           customTextRenderer={textRenderer}
-          style={{justify:'center'}}
+          className="pdf-page-center"
         >
         </Page>
       </Document>
       <FloatButton.Group shape="circle" style={{ insetInlineEnd: 24, position: 'fixed', right: '4%', transform: 'translateX(50%)', bottom: '45%' }}>
-        <FloatButton icon={<UpOutlined />} onClick={()=> {
-          setPageNum(pageNum-1);
-        }}/>
+        <FloatButton 
+          icon={<UpOutlined />} 
+          onClick={() => {
+            if (pageNum > 1) {
+              setPageNum(pageNum - 1);
+            }
+          }}
+        />
         <FloatButton icon={<FilePdfOutlined />} onClick={()=> {
-          //打开页面 todo
-          window.open(file , '_blank');
+          window.open(`${file}`, '_blank');
         }}/>
-        <FloatButton icon={<DownOutlined />} onClick={()=> {
-          setPageNum(pageNum+1);
-        }}/>
+        <FloatButton 
+          icon={<DownOutlined />} 
+          onClick={() => {
+            if (pageNum < numPages) {
+              setPageNum(pageNum + 1);
+            }
+          }}
+        />
       </FloatButton.Group>
     </div>
   );
