@@ -1230,3 +1230,8 @@ INSERT INTO `lp_topic` (`id`, `name`, `parent_id`, `level`, `type`, `create_time
 INSERT INTO `lp_topic` (`id`, `name`, `parent_id`, `level`, `type`, `create_time`, `modified_time`, `is_deleted`) VALUES (1881759207074586626, '深度', NULL, 100, NULL, '2025-01-22 01:42:11', '2025-02-08 04:58:37', 0);
 INSERT INTO `lp_topic` (`id`, `name`, `parent_id`, `level`, `type`, `create_time`, `modified_time`, `is_deleted`) VALUES (1887792999543369730, '诉讼', NULL, 101, '实务专题', '2025-02-07 17:18:19', '2025-02-07 17:18:19', 0);
 INSERT INTO `lp_topic` (`id`, `name`, `parent_id`, `level`, `type`, `create_time`, `modified_time`, `is_deleted`) VALUES (1887793069709881346, '执行', NULL, 101, '实务专题', '2025-02-07 17:18:36', '2025-02-07 17:18:36', 0);
+
+-- 检索报告
+INSERT INTO `lp_search_report` (`id`, `title`, `type`, `search_subject`, `create_time`, `modified_time`, `user_id`) VALUES (1, '检索报告3', 'MANUAL', 1, '2025-02-19 17:26:58', '2025-02-19 12:20:03', 1882479475478806529);
+INSERT INTO `lp_search_report` (`id`, `title`, `type`, `search_subject`, `create_time`, `modified_time`, `user_id`) VALUES (2, '检索报告2', 'MANUAL', 0, '2025-02-19 17:27:04', '2025-02-19 12:19:57', 1882479475478806529);
+INSERT INTO `lp_search_report` (`id`, `title`, `type`, `search_subject`, `create_time`, `modified_time`, `user_id`) VALUES (3, '检索报告1', 'MANUAL', 1, '2025-02-19 17:27:11', '2025-02-19 12:19:58', 1882479475478806529);
