@@ -43,6 +43,7 @@ CREATE TABLE IF NOT EXISTS lp_book (
   page_size int NULL DEFAULT NULL COMMENT '页数',
   create_time datetime NULL DEFAULT NULL COMMENT '创建时间',
   modified_time datetime NULL DEFAULT NULL COMMENT '最后更新时间',
+  `type` int NULL DEFAULT NULL COMMENT '文件类型，1表示书籍，2表示用户自定义PDF文件',
   md5 varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'md5',
   cn varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '中图分类号',
   series varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '众编',

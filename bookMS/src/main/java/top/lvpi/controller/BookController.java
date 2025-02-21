@@ -680,6 +680,11 @@ public class BookController {
             return BaseResponse.error(ErrorCode.OPERATION_ERROR, "该图书已获取过OPAC信息");
         }
 
+        // 判断type是否为1，如果不是则返回非书籍
+        if (book.getType() != 1) {
+            return BaseResponse.error(ErrorCode.OPERATION_ERROR, "该文件不是书籍，无法获取OPAC信息");
+        }
+
         // 生成唯一的任务ID
         String taskId = UUID.randomUUID().toString();
         

@@ -12,6 +12,7 @@ export interface Params {
   title?: string;
   yearFrom?: number;
   yearTo?: number;
+  type?: number;
 }
 
 export interface ListItemDataType {
@@ -29,6 +30,7 @@ export interface ListItemDataType {
   isbn?: string;
   source?: string;
   score?: number;
+  type: number;
   tags?: Array<{
     id: number;
     name: string;

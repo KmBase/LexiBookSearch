@@ -116,6 +116,19 @@ const BookCover: FC<BookCoverProps> = ({ picUrl = '', title, bookId = null }) =>
   );
 };
 
+interface IconTextProps {
+  icon: React.FC<{ style?: React.CSSProperties }>;
+  text: React.ReactNode;
+  key?: string;
+}
+
+const IconText: React.FC<IconTextProps> = ({ icon: Icon, text }) => (
+  <Space>
+    <Icon />
+    {text}
+  </Space>
+);
+
 const BookSearch: FC = () => {
   const [form] = Form.useForm();
   const location = useLocation();
@@ -306,6 +319,7 @@ const BookSearch: FC = () => {
         category: currentFilters.category?.join(','),
         author: currentFilters.author,
         publisher: currentFilters.publisher,
+        type: currentFilters.type,
       };
       
       const response = await (searchKeyWord 
@@ -385,6 +399,9 @@ const BookSearch: FC = () => {
     if ('source' in changedValues) {
       setQuerySource(changedValues.source);
       updates.source = changedValues.source;
+    }
+    if ('type' in changedValues) {
+      updates.type = changedValues.type;
     }
     
     // 只有非类目相关的参数才更新 URL
@@ -610,6 +627,16 @@ const BookSearch: FC = () => {
                 </FormItem>
               </Col>
               <Col span={6}>
+                <FormItem name="type" label="类型">
+                  <Select
+                    placeholder="请选择类型"
+                    allowClear
+                    options={[
+                      { value: 1, label: '图书' },
+                      { value: 2, label: '自定义PDF' },
+                    ]}
+                  />
+                </FormItem>
               </Col>
             </Row>
           </div>
@@ -680,6 +707,14 @@ const BookSearch: FC = () => {
           renderItem={(item) => (
             <List.Item
               key={item.id}
+              actions={[
+                <IconText icon={EyeOutlined} text={item.viewCount} key="list-vertical-view" />,
+                <IconText icon={LikeOutlined} text={item.likes} key="list-vertical-like" />,
+                <IconText icon={StarOutlined} text={item.stars} key="list-vertical-star" />,
+                <Tag key="list-vertical-type" color={item.type === 1 ? 'blue' : 'green'}>
+                  {item.type === 1 ? '图书' : '自定义PDF'}
+                </Tag>,
+              ]}
               extra={
                 <BookCover 
                   picUrl={item.picUrl || null} 

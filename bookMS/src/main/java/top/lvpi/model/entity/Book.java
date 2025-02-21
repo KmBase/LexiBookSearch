@@ -121,5 +121,9 @@ public class Book {
     @Schema(description = "isbn格式化")
     @TableField("isbn_format")
     private String isbnFormat;
+
+    @Schema(description = "文件类型，1表示书籍，2表示用户自定义PDF文件")
+    @TableField("type")
+    private Integer type;
 }
 

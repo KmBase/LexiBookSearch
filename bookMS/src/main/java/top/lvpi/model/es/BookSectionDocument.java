@@ -64,4 +64,7 @@ public class BookSectionDocument {
 
     @Field(name = "opac_series", type = FieldType.Text, analyzer = "ik_max_word")
     private String opacSeries;
+
+    @Field(name = "type", type = FieldType.Integer)
+    private Integer type;
 } 

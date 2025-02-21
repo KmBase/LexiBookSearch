@@ -36,4 +36,7 @@ public class BookQueryRequest {
 
     @Schema(description = "来源")
     private String source;
+
+    @Schema(description = "文件类型")
+    private Integer type;
 } 

@@ -479,6 +479,15 @@ const BookList: React.FC = () => {
       fixed: 'left',
     },
     {
+      title: '类型',
+      dataIndex: 'type',
+      width: 80,
+      valueEnum: {
+        1: { text: '图书' },
+        2: { text: '自定义PDF' },
+      },
+    },
+    {
       title: '副标题',
       dataIndex: 'subTitle',
       width: 200,

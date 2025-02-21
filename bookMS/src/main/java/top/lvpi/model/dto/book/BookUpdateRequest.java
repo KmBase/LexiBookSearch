@@ -87,6 +87,9 @@ public class BookUpdateRequest {
     @Schema(description = "ISBN格式化")
     private String isbnFormat;
 
+    @Schema(description = "文件类型")
+    private Integer type;
+
     /**
      * 是否已索引到ES（0：未索引，1：已索引）
      */

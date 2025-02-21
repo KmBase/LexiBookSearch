@@ -55,6 +55,9 @@
       "page_num": {
         "type": "integer"
       },
+      "type": {
+        "type": "integer"
+      },
       "pic_url": {
         "type": "text"
       },

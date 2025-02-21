@@ -300,6 +300,7 @@ public class BookSectionEsServiceImpl implements BookSectionEsService {
                 document.setTags(tags);
                 document.setOpacSeries(book.getOpacSeries());
                 document.setSeries(book.getSeries());
+                document.setType(book.getType());
                 return document;
             })
             .collect(Collectors.toList());

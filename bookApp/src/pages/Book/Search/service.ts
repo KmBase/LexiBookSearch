@@ -26,6 +26,7 @@ export async function queryBookList(
       publicationYear: params.publicationYear,
       source: params.source,
       category: params.category,
+      type: params.type,
     },
   });
 }

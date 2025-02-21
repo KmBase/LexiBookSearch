@@ -298,8 +298,23 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
                     }
                     book.setTitle(title);
 
+                    // 设置必填字段type,cellnum 16
+                    String typeStr = getCellValueAsString(row.getCell(16));
+                    //如果类型为空直接跳过
+                    if (StringUtils.isBlank(typeStr)) {
+                        errorMsg.append("第").append(i + 1).append("行：图书类型不能为空\n");
+                        continue;
+                    }
+                    try {
+                        Integer type = Integer.parseInt(typeStr);
+                        book.setType(type);
+                    } catch (NumberFormatException e) {
+                        errorMsg.append("第").append(i + 1).append("行：图书类型必须为数字\n");
+                        continue;
+                    }
+
                     // 设置副标题
-                    book.setSubTitle(getCellValueAsString(row.getCell(1)));
+                    book.setSubTitle(getCellValueAsString(row.getCell(2)));
 
                     // 设置作者
                     book.setAuthor(getCellValueAsString(row.getCell(2)));
@@ -376,22 +391,25 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
                     if (StringUtils.isNotBlank(filePath)) {
                         log.info("需要处理filePath: " + filePath+",开始上传文件");
                         try {
-                            String basePath = System.getProperty("user.dir") + "/filedata/";
+                            // String basePath = System.getProperty("user.dir") + "/filedata/";
+                            String basePath = System.getProperty("user.dir") + "/bookMS/src/main/resources/filedata/";
                             File file = new File(basePath + filePath);
                             if (!file.exists()) {
-                                log.info("文件不存在:{}，即将跳过该文件处理。", file.getAbsolutePath());
-                                continue;
+                                log.warn("文件不存在:{}，跳过文件上传。", file.getAbsolutePath());
+                                errorMsg.append("第").append(i + 1).append("行：文件不存在，跳过上传\n");
+                            } else {
+                                log.info("resourcePath: " + basePath + filePath);
+                                FileUploadResult fileUploadResult = minioUtils.uploadFile(file); // 使用MinioUtils替代FileService
+                                log.info("fileUploadResult: " + fileUploadResult);
+                                book.setFileName(fileUploadResult.getFilePath());
                             }
-                            log.info("resourcePath: " + basePath + filePath);
-                            FileUploadResult fileUploadResult = minioUtils.uploadFile(file); // 使用MinioUtils替代FileService
-                            log.info("fileUploadResult: " + fileUploadResult);
-                            book.setFileName(fileUploadResult.getFilePath());
                         } catch (Exception e) {
-                            System.out.println("error: " + e);
+                            log.error("文件上传失败: ", e);
                             errorMsg.append("第").append(i + 1).append("行：文件上传失败\n");
-                            continue;
                         }
                     }
+
+                    
 
                     books.add(book);
                     successRows++;
@@ -460,6 +478,11 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
         Book book = getBookById(id);
         if (book == null || StringUtils.isBlank(book.getIsbn())) {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "图书不存在或ISBN为空");
+        }
+
+        // 判断type是否为1，如果不是则返回非书籍
+        if (book.getType() != 1) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "该文件不是书籍，无法获取OPAC信息");
         }
 
         try {
@@ -632,6 +655,11 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
             queryWrapper.in(Book::getCategory, categoryList);
         } else if (StringUtils.isNotBlank(bookQueryRequest.getCategory())) {
             queryWrapper.eq(Book::getCategory, bookQueryRequest.getCategory());
+        }
+        
+        // 添加type字段的查询条件
+        if (bookQueryRequest.getType() != null) {
+            queryWrapper.eq(Book::getType, bookQueryRequest.getType());
         }
         
         IPage<Book> bookPage = bookMapper.selectPage(page, queryWrapper);

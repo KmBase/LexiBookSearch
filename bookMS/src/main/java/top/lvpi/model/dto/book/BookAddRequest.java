@@ -2,6 +2,7 @@ package top.lvpi.model.dto.book;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -53,4 +54,8 @@ public class BookAddRequest {
 
     @Schema(description = "页数")
     private Integer pageSize;
+
+    @Schema(description = "文件类型")
+    @NotNull(message = "文件类型不能为空")
+    private Integer type;
 } 

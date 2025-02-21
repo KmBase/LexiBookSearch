@@ -16,7 +16,7 @@ export interface BookItem {
   fileName?: string;
   picUrl?: string;
   pageSize?: number;
-  type?: number;
+  type: number;
   status?: number;
   score?: number;
   isOcr?: number;
