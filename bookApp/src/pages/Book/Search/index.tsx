@@ -12,6 +12,7 @@ import {
   BarcodeOutlined,
   ApiOutlined,
   TrophyOutlined,
+  FilePdfOutlined,
 } from '@ant-design/icons';
 import { Button, Card, Col, Form, List, Row, Select, Input, DatePicker, Space, Tag, Dropdown, Menu, Tooltip, Empty, Popconfirm, Image, message } from 'antd';
 import { FC, useEffect, useState, useCallback } from 'react';
@@ -122,10 +123,12 @@ interface IconTextProps {
   key?: string;
 }
 
-const IconText: React.FC<IconTextProps> = ({ icon: Icon, text }) => (
+
+const IconTip: React.FC<IconTextProps> = ({ icon: Icon, text }) => (
   <Space>
-    <Icon />
-    {text}
+    <Tooltip title={text}>
+      <Icon />
+    </Tooltip>
   </Space>
 );
 
@@ -704,11 +707,11 @@ const BookSearch: FC = () => {
           renderItem={(item) => (
             <List.Item
               key={item.id}
-              actions={[
-                <Tag key="list-vertical-type" color={item.type === 1 ? 'blue' : 'green'}>
-                  {item.type === 1 ? '图书' : '自定义PDF'}
-                </Tag>,
-              ]}
+              // actions={[
+              //   <Tag key="list-vertical-type" color={item.type === 1 ? 'blue' : 'green'}>
+              //     {item.type === 1 ? '图书' : '自定义PDF'}
+              //   </Tag>,
+              // ]}
               extra={
                 <BookCover 
                   picUrl={item.picUrl || null} 
@@ -720,27 +723,23 @@ const BookSearch: FC = () => {
               <List.Item.Meta
                 title={
                   <Space direction="vertical" size={2} style={{ width: '100%' }}>
-                    {/* 标签显示在标题上方 */}
-                    {item.tags && item.tags.length > 0 && (
-                      <div>
-                        {item.tags.map((tag) => (
-                          <Tag key={tag.id} color="blue">
-                            {tag.name}
-                          </Tag>
-                        ))}
-                      </div>
-                    )}
                     {/* 标题 */}
-                    <a 
+                    <a
                       onClick={() => {
                         if (item.fileName) {
                           handlePreview(item.fileName);
                         } else {
                           message.warning('暂不可阅读：请先上传！');
                         }
-                      }} 
-                      style={{ fontSize: '22px', fontWeight: '550', cursor: 'pointer' }}
+                      }}
+                      style={{
+                        fontSize: '22px',
+                        fontWeight: '550',
+                        cursor: 'pointer',
+                        color: item.type !== 1 ? '#A020F0' : undefined,
+                      }}
                     >
+                      <IconTip icon={item.type === 1 ? BookOutlined : FilePdfOutlined} text={item.type === 1 ? '图书' : '自定义PDF'} />
                       <HighlightText text={item.title} keyword={searchKeyWord} />
                     </a>
                   </Space>
@@ -755,7 +754,9 @@ const BookSearch: FC = () => {
                         { icon: <BarcodeOutlined />, label: 'ISBN', value: item.isbn },
                         { icon: <ApiOutlined />, label: '来源', value: item.source },
                         { icon: <TrophyOutlined />, label: '评分', value: item.score },
-                      ].map(({ icon, label, value }) => (
+                      ]
+                      .filter(({ value }) => value) // 仅渲染值不为空的项
+                      .map(({ icon, label, value }) => (
                         <Tooltip key={label} title={label}>
                           <span style={{ fontSize: '15px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                             {icon}

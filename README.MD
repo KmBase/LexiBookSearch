@@ -1,5 +1,5 @@
 # 律π -- 知识管理系统
-一个基于Spring Boot + React的前后端分离 知识管理平台，具备（针对已OCR的）PDF文件/图书管理与全文检索功能，并融合AI大模型。
+一个基于Spring Boot + React的前后端分离 知识管理平台，具备（针对已OCR的）PDF文档/图书管理与全文检索功能，并接入AI大模型。
 
 ## 目录
 - [功能特性](#功能特性)
@@ -18,12 +18,13 @@
 
 - [x] 支持多用户
 - [x] 自定义标签体系
-- [x] PDF文件/图书管理
-- [x] PDF文件全文检索
-- [x] PDF文件关键词高亮显示
+- [x] PDF文档/图书管理
+- [x] PDF文档全文检索
+- [x] PDF文档关键词高亮显示
+- [x] 书籍基本信息一键搜刮
 - [x] 接入AI大模型对话-DeepSeek
 - [x] 检索报告、笔记管理
-- [ ] 检索报告导出
+- [ ] 检索报告导出、分享
 - [ ] Prompt提示词管理，与笔记联动
 - [ ] 结合AI大模型，实现检索报告的自动生成
 
@@ -38,26 +39,27 @@
 ![用户管理](./demoPic/user_manage.png)
 > 注意：用户管理界面需要管理员权限
 
-4. 图书管理
-![图书管理](./demoPic/book_manage.png)
+4. 文档管理
+![文档管理](./demoPic/book_manage.png)
+> 支持图书及其他PDF文档导入
+> 支持图书基本信息一键搜刮
+> 支持图书标签分类
 
-5. 图书检索
-![图书检索](./demoPic/book_search.png)
+5. 文档检索
+![文档检索](./demoPic/book_search.png)
+> 文档基本检索
+![文档预览](./demoPic/book_preview.png)
+> 文档全文预览
 
-![图书预览](./demoPic/book_preview.png)
-
-6. 全文检索
-![全文检索](./demoPic/full_text_search.png)
-
-
-7. 主题列表--带层级关系标签
+6. 主题列表--带层级关系标签
 ![主题列表](./demoPic/topic_list.png)
+> 支持层级主题/标签分类
 
-8. 自定义标签--不带层级关系标签
+7. 自定义标签--不带层级关系标签
 ![自定义标签](./demoPic/custom_topic.png)
+> 支持自定义标签分类
 
-
-9. 全文检索
+8. 全文检索
 ![全文检索](./demoPic/full_text_search.png)
 > 检索结果关键词高亮显示、按条件过滤、命中书籍页面关键词高亮显示
 
@@ -69,27 +71,26 @@
 ![全文检索-高级检索](./demoPic/full_text_search_advanced.png)
 > 支持高级检索：支持多字段多条件检索，支持同段、同句检索
 
-10. AI助手
-![AI助手](./demoPic/ai_assistant.png)
-> 接入AI大模型，暂支持DeepSeek大模型
 
-11. 添加笔记
+9. 添加笔记
 ![添加笔记](./demoPic/add_note.png)
 > 支持在PDF页面中选中文本添加为笔记，可添加到指定检索报告中（通过在检索报告页面设置关联菜单）
 
-12. 检索报告&笔记管理
+10. 检索报告&笔记管理
 ![检索报告](./demoPic/search_report.png)
-> 支持添加检索报告、搜索检索报告；  
-> 支持添加笔记拖动排序、删除、编辑以及笔记复制；
+> 支持添加/管理检索报告、搜索检索报告；  
+> 支持笔记删除、编辑管理，支持笔记复制；
+> 支持笔记拖动排序，自带层级序号
 
-
+11. AI助手
+![AI助手](./demoPic/ai_assistant.png)
+> 接入AI大模型，暂支持DeepSeek大模型
 
 ## 技术栈
 
 ### 后端技术栈
 - Spring Boot 3.2.1
 - MySQL 8.0
-
 - Elasticsearch 8.12.2
 - Redis 7.2
 - MinIO
@@ -127,7 +128,7 @@ CPU：
 - Elasticsearch 数据: 至少 10GB
 - MySQL 数据: 至少 5GB
 - Redis 数据: 1GB
-- MinIO 对象存储: 10GB（取决于文件存储需求）
+- MinIO 对象存储: 10GB（取决于文档存储需求）
 - 应用日志和其他: 2GB
 - 总计最小需求：30GB 存储空间
 
@@ -145,9 +146,9 @@ CPU：
 #### 注意事项
 - Elasticsearch 是最消耗资源的服务，特别是内存使用
 - 如果有大量并发用户，应该相应增加内存和 CPU
-- 如果需要存储大量文件，需要相应增加 MinIO 的存储空间
+- 如果需要存储大量文档，需要相应增加 MinIO 的存储空间
 - 建议使用 SSD 存储以提高性能，特别是对 Elasticsearch 和 MySQL
-- 需要根据实际使用场景（并发用户数、数据量、文件存储需求等）来调整这些配置。
+- 需要根据实际使用场景（并发用户数、数据量、文档存储需求等）来调整这些配置。
 
 ### 软件要求
 - Docker 20.10.x 及以上（推荐部署方式）
@@ -164,6 +165,11 @@ CPU：
 - MinIO
 
 ## 部署指南
+
+前置条件：
+- 安装 Git： [Download Git](https://git-scm.com/downloads)
+- 安装 Docker： [Download Docker](https://www.docker.com/)
+- 安装 Docker Compose： [Download Docker Compose](https://docs.docker.com/compose/install/)
 
 ### Docker部署（推荐）
 
@@ -221,6 +227,8 @@ DEEPSEEK_API_KEY=your_api_key
 ```bash
 # 启动所有服务
 docker-compose up -d
+# 注意1：如果Docker Compose 是standalone版，应当使用`docker compose up -d`，下同；
+# 注意2：如果需要只是重建部分服务，应当在重建完成后重启Nginx服务。
 
 # 查看服务状态
 docker-compose ps
@@ -317,9 +325,9 @@ yarn dev
 │   │   │   ├── java/com/bookms/
 │   │   │   │   ├── controller/       # REST API 控制器
 │   │   │   │   ├── service/          # 业务逻辑层
-│   │   │   │   ├── repository/       # 数据访问层（MyBatis-Plus）
+│   │   │   │   ├── repository/       # 数据访问层
 │   │   │   │   ├── model/            # 数据实体类
-│   │   │   │   ├── config/           # 配置类（Sa-Token/Security/Redis等）
+│   │   │   │   ├── config/           # 配置类
 │   │   │   │   ├── utils/            # 工具类
 │   │   │   │   └── Application.java  # 启动类
 │   │   │   └── resources/
@@ -350,7 +358,7 @@ yarn dev
 │   │   └── elasticsearch/   # ES配置文件
 │   ├── nginx/               # Nginx配置
 │   │   └── nginx.conf
-│   └── filedata/            # 文件数据
+│   └── filedata/            # 文档数据
 └── docker-compose.yml       
 
 ```
@@ -369,8 +377,10 @@ yarn dev
 
 
 ## 标签设计
+> 通过给文档打标签可以给文档添加添加更多的分类，方便在检索后进行过滤。  
+> 该标签体系设计，不管是带层级关系还是不带层级关系标签都可无限维度拓展，但考虑到通用性，本项目在全文检索页面中只设了“通用标签”以及“主题分类”两个维度；如有需要，请按业务需求自行拓展。  
 
-`lp_topic`表是基于图书的分类，每个标签代表一个图书的分类，标签可以有多个，每个标签可以有多个图书。
+`lp_topic`表是基于图书的分类，每个标签代表一个图书的分类，标签可以有多个，每个标签可以有多个文档。
 
 1. 【带层级关系的主题分类】    
   这类标签具有父子关系，使用 parent_id 存储父标签。  
@@ -379,11 +389,11 @@ yarn dev
 2. 【不带层级的通用自定义标签】    
   这类标签没有父子关系，且应用单一业务场景。  
   • 约定：将 level 固定为 100  
-  • parent_id 必须为 NULL，表示没有层级结构。  
+  • parent_id 固定为 0，表示没有层级结构。  
 3. 【不带层级的书籍类型】  
   比如民法、刑法等，这里认为这类标签无需层级结构。  
   • 约定：将 level 固定为 101  
-  • parent_id 固定为 NULL。  
+  • parent_id 固定为 0。  
 4. 【不带层级的实务专题】  
   例如劳动专题、执行专题等，同样不具有层级关系。  
   • 约定：将 level 固定为 102  
@@ -397,7 +407,7 @@ yarn dev
 ## 软件使用声明
 
 1. 本系统仅供个人学习、研究及合法知识管理用途
-2. 禁止用于以下非法用途：
+2. 禁止用于以下非法用途： 
    - 传播盗版电子书或受版权保护内容
    - 存储或传播违法、涉密信息
    - 任何违反当地法律法规的行为

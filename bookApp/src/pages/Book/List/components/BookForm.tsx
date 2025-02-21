@@ -666,10 +666,26 @@ const BookForm: React.FC<BookFormProps> = (props) => {
             name="author"
             label="作者"
           />
+          <ProFormSelect
+            name="type"
+            label="文档类型"
+            // 默认值
+            initialValue={1}
+            options={[
+              { label: '图书', value: 1 },
+              { label: '自定义PDF', value: 2 },
+            ]}
+          />
           <ProFormText
             name="isbn"
             label="ISBN"
-            rules={[{ required: true, message: '请输入ISBN' }]}
+            dependencies={['type']}
+            rules={[
+              ({ getFieldValue }) => ({
+                required: getFieldValue('type') === 1,
+                message: '请输入ISBN'
+              })
+            ]}
           />
           <Form.Item
             name="category"
