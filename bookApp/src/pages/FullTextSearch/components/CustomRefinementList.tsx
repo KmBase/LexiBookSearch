@@ -14,7 +14,7 @@ function CustomRefinementList(props: any) {
     <div style={{minHeight:210}}>
       <div style={{marginBottom:10, fontSize:16,fontWeight:600}}>
         <Input
-          placeholder="在结果中检索书籍名称"
+          placeholder="在结果中检索关键词"
           prefix={<SearchOutlined style={{fontSize:16}} />}
           type="search"
           autoComplete="off"
