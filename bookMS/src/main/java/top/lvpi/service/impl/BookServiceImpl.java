@@ -391,8 +391,8 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
                     if (StringUtils.isNotBlank(filePath)) {
                         log.info("需要处理filePath: " + filePath+",开始上传文件");
                         try {
-                            // String basePath = System.getProperty("user.dir") + "/filedata/";
-                            String basePath = System.getProperty("user.dir") + "/bookMS/src/main/resources/filedata/";
+                            String basePath = System.getProperty("user.dir") + "/filedata/";
+                            // String basePath = System.getProperty("user.dir") + "/bookMS/src/main/resources/filedata/";
                             File file = new File(basePath + filePath);
                             if (!file.exists()) {
                                 log.warn("文件不存在:{}，跳过文件上传。", file.getAbsolutePath());
