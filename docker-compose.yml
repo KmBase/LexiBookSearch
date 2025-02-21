@@ -42,21 +42,31 @@ services:
       - http.cors.allow-origin="*"
       - http.cors.allow-headers=X-Requested-With,Content-Type,Content-Length,Authorization
       - http.cors.allow-credentials=true
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     volumes:
-      - ./docker/elasticsearch:/usr/share/elasticsearch/data
+      - ./docker/elasticsearch:/usr/share/elasticsearch/data:rw
       - ./docker/config/elasticsearch/analysis-ik:/usr/share/elasticsearch/temp/analysis-ik
-    user: root
+    user: elasticsearch
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
     command: >
       /bin/bash -c "
-      rm -rf /usr/share/elasticsearch/plugins/analysis-ik;
-      cd /usr/share/elasticsearch/plugins;
-      unzip /usr/share/elasticsearch/temp/analysis-ik/elasticsearch-analysis-ik-8.12.2.zip -d analysis-ik/;
-      cp -r /usr/share/elasticsearch/temp/analysis-ik/custom /usr/share/elasticsearch/plugins/analysis-ik/config/;
-      cp /usr/share/elasticsearch/temp/analysis-ik/IKAnalyzer.cfg.xml /usr/share/elasticsearch/plugins/analysis-ik/config/;
-      chown -R elasticsearch:root /usr/share/elasticsearch/plugins/analysis-ik;
-      chmod -R 755 /usr/share/elasticsearch/plugins/analysis-ik;
-      su elasticsearch -c '/usr/local/bin/docker-entrypoint.sh'
-      "
+      chown -R elasticsearch:elasticsearch /usr/share/elasticsearch/data &&
+      chmod -R 777 /usr/share/elasticsearch/data &&
+      rm -rf /usr/share/elasticsearch/plugins/analysis-ik &&
+      cd /usr/share/elasticsearch/plugins &&
+      unzip /usr/share/elasticsearch/temp/analysis-ik/elasticsearch-analysis-ik-8.12.2.zip -d analysis-ik/ &&
+      cp -r /usr/share/elasticsearch/temp/analysis-ik/custom /usr/share/elasticsearch/plugins/analysis-ik/config/ &&
+      cp /usr/share/elasticsearch/temp/analysis-ik/IKAnalyzer.cfg.xml /usr/share/elasticsearch/plugins/analysis-ik/config/ &&
+      chown -R elasticsearch:elasticsearch /usr/share/elasticsearch/plugins/analysis-ik &&
+      chmod -R 755 /usr/share/elasticsearch/plugins/analysis-ik &&
+      elasticsearch"
     ports:
       - ${ELASTICSEARCH_PORT}:9200
     networks:
