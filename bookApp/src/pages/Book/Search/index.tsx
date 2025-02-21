@@ -27,21 +27,21 @@ import { getPreviewUrlByFileName } from '@/services/book';
 import { PageContainer } from '@ant-design/pro-layout';
 
 const FormItem = Form.Item;
-const { Option } = Select;
 
 const pageSize = 10;
-
-// 来源选项
-const sources = [
-  { value: '不限', label: '不限' },
-  { value: 'fx', label: '法信' },
-];
-
+  
 // 排序选项
 const sortOptions = [
   { value: 'relevance', label: '相关度' },
   { value: 'publicationYear', label: '出版年份' },
+];  
+// 类型选项
+const typeOptions = [
+  { value: 1, label: '图书' },
+  { value: 2, label: '自定义PDF' },
 ];
+
+
 
 const SEARCH_HISTORY_KEY = 'book_search_history';
 const MAX_HISTORY_ITEMS = 10;
@@ -631,10 +631,7 @@ const BookSearch: FC = () => {
                   <Select
                     placeholder="请选择类型"
                     allowClear
-                    options={[
-                      { value: 1, label: '图书' },
-                      { value: 2, label: '自定义PDF' },
-                    ]}
+                    options={typeOptions}
                   />
                 </FormItem>
               </Col>
@@ -708,9 +705,6 @@ const BookSearch: FC = () => {
             <List.Item
               key={item.id}
               actions={[
-                <IconText icon={EyeOutlined} text={item.viewCount} key="list-vertical-view" />,
-                <IconText icon={LikeOutlined} text={item.likes} key="list-vertical-like" />,
-                <IconText icon={StarOutlined} text={item.stars} key="list-vertical-star" />,
                 <Tag key="list-vertical-type" color={item.type === 1 ? 'blue' : 'green'}>
                   {item.type === 1 ? '图书' : '自定义PDF'}
                 </Tag>,

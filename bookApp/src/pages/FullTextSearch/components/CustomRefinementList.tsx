@@ -9,7 +9,7 @@ function CustomRefinementList(props: any) {
     searchForItems,
   } = useRefinementList(props);
 
-
+  console.log(props.options);
   return (
     <div style={{minHeight:210}}>
       <div style={{marginBottom:10, fontSize:16,fontWeight:600}}>
@@ -35,7 +35,11 @@ function CustomRefinementList(props: any) {
                   onChange={() => refine(item.value)}
                   style={{ borderRadius: '10%' }}
                 >
-                  <span style={{ fontSize: 14, lineHeight: 0.5 }}>{item.label}</span>
+                  <span style={{ fontSize: 14, lineHeight: 0.5 }}>
+                    {props.options && props.options.length > 0
+                      ? props.options.find((option: any) => String(option.value) === String(item.label))?.label || item.label
+                      : item.label}
+                  </span>
                   <Tag color="default" style={{ marginLeft: 8 }}>
                     {item.count}
                   </Tag>

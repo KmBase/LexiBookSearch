@@ -6,6 +6,11 @@ import { useMemo, useState } from 'react';
 const { Text } = Typography;
 
 
+// 文档类型选项
+const typeOptions = [
+  { value: 1, label: '图书' },
+  { value: 2, label: '自定义PDF' },
+];
 
 const CustomCurrentRefinements = (props: any) => {
     const { items, refine } = useCurrentRefinements(props);
@@ -23,7 +28,8 @@ const CustomCurrentRefinements = (props: any) => {
           'topics_lvl4': '主题',
           'tags': '标签',
           'opac_series': 'OPAC系列',
-          'series': '系列'
+          'series': '系列',
+          'type': '文档类型'
       };
       return labels[label] || label; // 如果没有匹配，返回原始标签
   };
@@ -55,7 +61,7 @@ const CustomCurrentRefinements = (props: any) => {
                         fontSize: '12px'
                         }}
                     >
-                        {getLabelInChinese(item.label)}: {refinement.label}
+                        {getLabelInChinese(item.label)}: {getLabelInChinese(item.label) === '文档类型' ? typeOptions.find(option => String(option.value) === String(refinement.label))?.label || refinement.label : refinement.label}
                     </Tag>
                 )
             })

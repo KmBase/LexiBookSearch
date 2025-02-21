@@ -41,6 +41,12 @@ const generateSpanTerm = (textArr: string[]) => {
   }));
 };
 
+// 类型选项
+const typeOptions = [
+  { value: 1, label: '图书' },
+  { value: 2, label: '自定义PDF' },
+];
+
 const sk = new Searchkit({
   connection: {
     host: '/es',  // 使用代理地址
@@ -72,9 +78,7 @@ const sk = new Searchkit({
       { attribute: 'author', type: 'string', field: 'author' },
       { attribute: 'publication_year', type: 'string', field: 'publication_year' },
       { attribute: 'type', type: 'string', field: 'type' },
-      {
-        attribute: 'book_title', type: 'string', field: 'book_title.keyword',
-      },
+      {attribute: 'book_title', type: 'string', field: 'book_title.keyword'},
     ],
   },
 });
@@ -518,8 +522,8 @@ const FullTextSearch = () => {
                 <ProCard.TabPane key="tab5" tab="系列">
                   <CustomRefinementList attribute="series" searchable showMore />
                 </ProCard.TabPane>
-                <ProCard.TabPane key="tab6" tab="类型">
-                  <CustomRefinementList attribute="type" searchable showMore />
+                <ProCard.TabPane key="tab6" tab="文档类型">
+                  <CustomRefinementList attribute="type" searchable showMore options={typeOptions} />
                 </ProCard.TabPane>
                 <ProCard.TabPane key="tab7" tab="OPAC系列">
                   <CustomRefinementList attribute="opac_series" searchable showMore />
