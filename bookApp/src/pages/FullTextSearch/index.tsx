@@ -45,8 +45,8 @@ const sk = new Searchkit({
   connection: {
     host: '/es',  // 使用代理地址
     auth: {
-      username: getEnvVar('VITE_ES_USERNAME', ''),
-      password: getEnvVar('VITE_ES_PASSWORD', ''),
+      username: getEnvVar('VITE_ES_USERNAME', 'elastic'),
+      password: getEnvVar('VITE_ES_PASSWORD', 'wellgone'),
     },
   },
   search_settings: {

@@ -1,9 +1,7 @@
 package top.lvpi.config;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch.indices.CreateIndexResponse;
-import co.elastic.clients.elasticsearch.indices.ExistsRequest;
-import co.elastic.clients.elasticsearch.indices.DeleteIndexResponse;
+import co.elastic.clients.elasticsearch.indices.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -11,8 +9,15 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.stereotype.Component;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 @Slf4j
 @Component
@@ -28,10 +33,12 @@ public class ElasticsearchInitializer implements CommandLineRunner {
 
     private final ElasticsearchOperations elasticsearchOperations;
     private final ResourceLoader resourceLoader;
+    private final ObjectMapper objectMapper;
 
     public ElasticsearchInitializer(ElasticsearchOperations elasticsearchOperations, ResourceLoader resourceLoader) {
         this.elasticsearchOperations = elasticsearchOperations;
         this.resourceLoader = resourceLoader;
+        this.objectMapper = new ObjectMapper();
     }
 
     @Override
@@ -44,20 +51,41 @@ public class ElasticsearchInitializer implements CommandLineRunner {
         int retryCount = 0;
         while (retryCount < MAX_RETRIES) {
             try {
+                // 读取映射文件
+                Resource resource = resourceLoader.getResource("classpath:" + mappingFile);
+                String mappingJson = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+                JsonNode expectedMapping = objectMapper.readTree(mappingJson);
+                JSONObject expectedMappings = JSONUtil.parseObj(expectedMapping.get("mappings").toString());
+
                 // 检查索引是否存在
                 boolean indexExists = elasticsearchClient.indices()
                     .exists(ExistsRequest.of(e -> e.index(indexName)))
                     .value();
 
                 if (indexExists) {
-                    log.info("Index {} already exists, skipping initialization", indexName);
-                    return;
+                    // 获取现有索引的映射
+                    GetIndexResponse getIndexResponse = elasticsearchClient.indices().get(
+                        GetIndexRequest.of(g -> g.index(indexName))
+                    );
+                    JSONObject currentMappingJson = JSONUtil.parseObj(getIndexResponse.get(indexName).mappings().toString().replace("TypeMapping: ", ""));
+                    
+                    // 比较映射结构
+                    if (expectedMappings.equals(currentMappingJson)) {
+                        log.info("Index {} exists and mapping is up to date", indexName);
+                        return;
+                    }
+
+                    log.info("Index {} exists but mapping is different, recreating index", indexName);
+                    
+                    // 删除现有索引
+                    DeleteIndexResponse deleteResponse = elasticsearchClient.indices()
+                        .delete(DeleteIndexRequest.of(d -> d.index(indexName)));
+                    
+                    if (!deleteResponse.acknowledged()) {
+                        throw new RuntimeException("Failed to delete existing index " + indexName);
+                    }
                 }
 
-                // 读取映射文件
-                Resource resource = resourceLoader.getResource("classpath:" + mappingFile);
-                String mappingJson = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-                
                 // 创建索引
                 CreateIndexResponse response = elasticsearchClient.indices()
                     .create(c -> c
