@@ -108,9 +108,24 @@ const BookCover: FC<BookCoverProps> = ({ picUrl = '', title, bookId = null }) =>
         <Image
           width={150}
           height={200}
-          src={base64Data ? `data:image/jpeg;base64,${base64Data}` : (picUrl?.startsWith('img/') ? '/api2/2024/11/27/6746e954eecd5.jpg' : `/api2/${picUrl || '2024/11/27/6746e954eecd5.jpg'}`)}
+          src={base64Data 
+            ? `data:image/jpeg;base64,${base64Data}` 
+            : (picUrl?.startsWith('img/') 
+              ? '/api2/2024/11/27/6746e954eecd5.jpg' 
+              : (picUrl 
+                ? `/api2/${picUrl}` 
+                : `data:image/svg+xml,${encodeURIComponent(`
+                  <svg width="150" height="200" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="100%" height="100%" fill="#f5f5f5"/>
+                    <text x="50%" y="50%" font-family="Arial" font-size="18" font-weight="bold" fill="#999" text-anchor="middle" dominant-baseline="middle">
+                      暂无封面
+                    </text>
+                  </svg>
+                `)}`
+              )
+            )}
           alt={title}
-          style={{ objectFit: 'cover' }}
+          style={{ objectFit: 'cover', border: '1px solid #eee', borderRadius: '4px' }}
         />
       )}
     </div>
