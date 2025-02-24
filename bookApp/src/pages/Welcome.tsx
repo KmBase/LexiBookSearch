@@ -202,7 +202,7 @@ const Welcome: React.FC = () => {
                   </div>
                   <div style={{ paddingLeft: '24px', color: token.colorTextSecondary }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
-                      <CloudUploadOutlined /> 单文导入：点击&ldquo;新增&rdquo;按钮，填写基本信息并上传文档
+                      <CloudUploadOutlined /> 单文导入：点击&ldquo;新增&rdquo;按钮，填写基本信息并上传文档（注意，上传文档前请先保存基本信息）
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
                       <DatabaseOutlined /> 批量导入：点击&ldquo;批量导入&rdquo;按钮，使用模板导入多个文档
