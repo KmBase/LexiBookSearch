@@ -503,6 +503,31 @@ const BookForm: React.FC<BookFormProps> = (props) => {
     accept: '.pdf',
     maxCount: 1,
     showUploadList: true,
+    beforeUpload: (file) => {
+      // 1. 获取当前表单值
+      const formValues = formRef.current?.getFieldsValue();
+      const type = formValues?.type || 1;
+
+      // 2. 检查必填字段
+      if (!formValues?.title?.trim()) {
+        message.error('请先填写书名后保存，再上传文件');
+        return false;
+      }
+
+      // 如果是图书类型，检查ISBN
+      if (type === 1 && !formValues?.isbn?.trim()) {
+        message.error('图书类型必须填写ISBN后保存，再上传文件');
+        return false;
+      }
+
+      // 3. 检查是否已保存图书信息
+      if (!values?.id) {
+        message.error('请先保存图书基本信息，再上传文件');
+        return false;
+      }
+
+      return true;
+    },
     customRequest: async (options) => {
       const { file, onProgress, onError, onSuccess } = options;
       const formData = new FormData();
@@ -547,13 +572,8 @@ const BookForm: React.FC<BookFormProps> = (props) => {
           onError?.(new Error('上传失败'));
         });
 
-        if (!values?.id) {
-          message.error('请先保存图书基本信息');
-          onError?.(new Error('缺少图书ID'));
-          return;
-        }
-
-        xhr.open('POST', `/api/book/upload/${values.id}`, true);
+        const bookId = values?.id;
+        xhr.open('POST', `/api/book/upload/${bookId}`, true);
         xhr.setRequestHeader('Accept', 'application/json');
         xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
         const token = localStorage.getItem('token');
@@ -671,6 +691,7 @@ const BookForm: React.FC<BookFormProps> = (props) => {
             label="文档类型"
             // 默认值
             initialValue={1}
+            rules={[{ required: true, message: '请选择文档类型' }]}
             options={[
               { label: '图书', value: 1 },
               { label: '自定义PDF', value: 2 },
@@ -681,7 +702,7 @@ const BookForm: React.FC<BookFormProps> = (props) => {
             label="ISBN"
             dependencies={['type']}
             rules={[
-              ({ getFieldValue }) => ({
+              ({ getFieldValue }: { getFieldValue: (field: string) => any }) => ({
                 required: getFieldValue('type') === 1,
                 message: '请输入ISBN'
               })
@@ -871,15 +892,17 @@ const BookForm: React.FC<BookFormProps> = (props) => {
           />
         </Col>
         <Col span={12}>
-          <ImageUpload
-            value={coverUrl}
-            onChange={handleCoverChange}
-            maxSize={5}
-          />
-          <ProFormText
-            name="picUrl"
-            label="封面"
-          />
+          <div style={{marginTop: 14}}>
+            <ImageUpload
+                  value={coverUrl}
+                  onChange={handleCoverChange}
+                  maxSize={5}
+                />
+                <ProFormText
+                  name="picUrl"
+                  label="封面"
+                />
+          </div>
         </Col>
 
       </Row>

@@ -72,7 +72,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   };
 
   const uploadButton = (
-    <div className="upload-placeholder">
+    <div className="upload-placeholder" >
       {loading ? <LoadingOutlined /> : <PlusOutlined />}
       <div className="upload-text">上传图片</div>
     </div>
