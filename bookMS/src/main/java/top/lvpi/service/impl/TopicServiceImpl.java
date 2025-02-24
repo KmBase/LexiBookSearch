@@ -284,24 +284,7 @@ public class TopicServiceImpl extends ServiceImpl<TopicMapper, Topic> implements
 
     @Override
     public List<Topic> getBookTopicTags(Long bookId) {
-        // 1. 获取书籍关联的所有主题ID
-        LambdaQueryWrapper<BookTopic> bookTopicWrapper = new LambdaQueryWrapper<>();
-        bookTopicWrapper.eq(BookTopic::getBookId, bookId)
-                .eq(BookTopic::getIsDeleted, 0);
-        List<BookTopic> bookTopics = bookTopicMapper.selectList(bookTopicWrapper);
-
-        if (bookTopics.isEmpty()) {
-            return new ArrayList<>();
-        }
-        // 2. 获取每个主题的name
-        List<Topic> result = new ArrayList<>();
-        for (BookTopic bookTopic : bookTopics) {
-            Topic topic = this.getById(bookTopic.getTopicId());
-            if (topic != null && topic.getParentId() == null && topic.getLevel() == null) {
-                result.add(topic);
-            }
-        }
-        return result;
+        return baseMapper.getBookTopicTags(bookId);
     }
 
 } 

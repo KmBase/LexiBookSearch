@@ -138,12 +138,13 @@ public class TopicController {
                                                 @RequestParam(required = false) Long parentId) {
         // 构建查询条件
         QueryWrapper<Topic> queryWrapper = new QueryWrapper<>();
-        //链式构建，level和parentId不为null
+        if (level != null) {
+            queryWrapper.eq("level", level);
+        }else{
+            queryWrapper.lt("level", 100);
+        }   
         queryWrapper.like(name != null, "name", name)
-                    .eq(level != null, "level", level)
                     .eq(parentId != null, "parent_id", parentId)
-                    .isNotNull("level")
-                    .isNotNull("parent_id")
                     .orderByAsc("level");
 
         List<Topic> topics = topicService.list(queryWrapper);
@@ -178,8 +179,8 @@ public class TopicController {
             queryWrapper.ge("level", 100);
         }
         
-        // 确保parentId为null（不带层级的标签）
-        queryWrapper.isNull("parent_id");
+        // 确保parentId为0（不带层级的标签）
+        queryWrapper.eq("parent_id", 0);
         
         // 添加排序
         if ("asc".equalsIgnoreCase(sortOrder)) {

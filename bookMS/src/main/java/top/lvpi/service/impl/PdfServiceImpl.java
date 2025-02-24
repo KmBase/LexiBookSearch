@@ -35,7 +35,7 @@ public class PdfServiceImpl implements PdfService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public String extractText(String fileName, Long bookId) {
+    public String extractText(String fileName, Long bookId, String title) {
         if (StringUtils.isBlank(fileName)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "文件名不能为空");
         }
@@ -48,7 +48,7 @@ public class PdfServiceImpl implements PdfService {
             InputStream pdfStream = fileService.getFileInputStream(fileName);
             
             // 提取文本内容
-            List<BookSection> sections = PDFUtils.extractTextToSections(pdfStream, bookId);
+            List<BookSection> sections = PDFUtils.extractTextToSections(pdfStream, bookId, title);
             
             // 保存章节信息
             if (sections != null && !sections.isEmpty()) {

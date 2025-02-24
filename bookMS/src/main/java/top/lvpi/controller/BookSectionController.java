@@ -23,9 +23,10 @@ public class BookSectionController {
             @RequestParam(defaultValue = "1") Integer current,
             @RequestParam(defaultValue = "10") Integer size,
             @RequestParam(required = false) Long bookId,
+            @RequestParam(required = false) String title,
             @RequestParam(required = false) Integer pageNum,
             @RequestParam(required = false) String content) {
-        return BaseResponse.success(bookSectionService.page(current, size, bookId, pageNum, content));
+        return BaseResponse.success(bookSectionService.page(current, size, bookId, pageNum, title, content));
     }
 
     @Operation(summary = "添加图书章节")

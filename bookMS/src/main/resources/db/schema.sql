@@ -75,6 +75,7 @@ CREATE TABLE IF NOT EXISTS lp_img (
 CREATE TABLE IF NOT EXISTS `lp_book_section` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '章节ID',
   `book_id` bigint NULL DEFAULT NULL COMMENT '书籍id',
+  `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '文档名称',
   `section_text` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '分段的文本内容',
   `page_num` int NULL DEFAULT NULL COMMENT '分段所在的页码',
   `coordinates` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '分段坐标',

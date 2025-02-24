@@ -15,7 +15,7 @@ public interface BookSectionService extends IService<BookSection> {
      * @param content 内容关键字
      * @return 分页结果
      */
-    IPage<BookSection> page(Integer current, Integer size, Long bookId,Integer pageNum, String content);
+    IPage<BookSection> page(Integer current, Integer size, Long bookId,Integer pageNum, String title, String content);
     
     /**
      * 更新图书章节并同步更新ES索引

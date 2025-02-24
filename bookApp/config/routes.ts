@@ -84,7 +84,7 @@ export default [
       },
       {
         path: '/book/es',
-        name: 'ES管理',
+        name: '索引管理',
         icon: 'database',
         component: './Book/Es',
       },

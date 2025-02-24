@@ -71,8 +71,23 @@ export default function BookEsList() {
       width: 60,
     },
     {
-      title: '书名',
+      title: '文档名称',
       dataIndex: 'bookTitle',
+      search: true,
+    },
+    {
+      title: 'OPAC系列',
+      dataIndex: 'opacSeries',
+      search: true,
+    },
+    {
+      title: '图书系列',
+      dataIndex: 'series',
+      search: true,
+    },
+    {
+      title: '出版年份',
+      dataIndex: 'publicationYear',
       search: true,
     },
     {
@@ -88,6 +103,16 @@ export default function BookEsList() {
     {
       title: 'ISBN',
       dataIndex: 'isbn',
+      search: true,
+    },
+    {
+      title: '标签',
+      dataIndex: 'tags',
+      search: true,
+    },
+    {
+      title: '主题系列',
+      dataIndex: 'topicSeries',
       search: true,
     },
     {

@@ -22,7 +22,7 @@ public class PDFUtils {
      * @return 章节列表
      * @throws IOException IO异常
      */
-    public static List<BookSection> extractTextToSections(InputStream pdfStream, Long bookId) throws IOException {
+    public static List<BookSection> extractTextToSections(InputStream pdfStream, Long bookId, String title) throws IOException {
         List<BookSection> sections = new ArrayList<>();
         PDDocument document = PDDocument.load(pdfStream);
         PDFTextStripper stripper = new PDFTextStripper();
@@ -42,6 +42,7 @@ public class PDFUtils {
             section.setBookId(bookId);
             section.setPageNum(i);
             section.setContent(pageText);
+            section.setTitle(title);
             sections.add(section);
         }
 

@@ -11,13 +11,23 @@ import java.util.Date;
 public class BookSection {
 
     @TableId(type = IdType.AUTO)
+    @Schema(description = "章节ID", name = "id", type = "Long")
     private Long id;
 
+    @TableField(value = "book_id")
+    @Schema(description = "图书ID", name = "bookId", type = "Long")
     private Long bookId;
 
+    @TableField(value = "page_num")
+    @Schema(description = "页码", name = "pageNum", type = "Integer")
     private Integer pageNum;
 
+    @TableField(value = "title")
+    @Schema(description = "文档名称", name = "title", type = "String")
+    private String title;
+
     @TableField(value = "section_text")
+    @Schema(description = "章节内容", name = "sectionText", type = "String")
     private String content;
 
     //创建时间

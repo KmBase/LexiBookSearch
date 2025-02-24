@@ -49,6 +49,9 @@ const SectionForm: React.FC<SectionFormProps> = (props) => {
         name="content"
         label="内容"
         placeholder="请输入内容"
+        fieldProps={{
+          autoSize: { minRows: 5, maxRows: 20 },
+        }}
         rules={[{ required: true, message: '请输入内容' }]}
       />
     </ModalForm>

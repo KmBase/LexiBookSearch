@@ -69,9 +69,15 @@ const BookSectionList: React.FC = () => {
         width: 80,
       },
     {
-      title: '图书ID',
+      title: '文档ID',
       dataIndex: 'bookId',
       width: 80,
+    },
+    {
+      title: '文档名称',
+      dataIndex: 'title',
+      width: 150,
+      search: true,
     },
     {
       title: '页码',

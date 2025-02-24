@@ -46,7 +46,7 @@ const TagList: React.FC = () => {
           ...fields,
           level: fields.level || tagTypes.find(t => t.value === fields.type)?.level || 100,
           type: fields.type || '通用标签',
-          parentId: null,
+          parentId: 0,
         },
       });
       hide();

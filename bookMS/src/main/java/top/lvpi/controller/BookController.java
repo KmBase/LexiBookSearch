@@ -477,7 +477,7 @@ public class BookController {
                     .setCurrentStep("正在提取PDF文本内容...");
 
                 // 执行文本提取
-                String result = pdfService.extractText(book.getFileName(), id);
+                String result = pdfService.extractText(book.getFileName(), id, book.getTitle());
 
                 // 更新任务完成状态
                 taskProgress.setStatus(1)
@@ -879,7 +879,7 @@ public class BookController {
                     
                     try {
                         if (book != null && StringUtils.isNotBlank(book.getFileName())) {
-                            String result = pdfService.extractText(book.getFileName(), book.getId());
+                            String result = pdfService.extractText(book.getFileName(), book.getId(), book.getTitle());
                             resultBuilder.append(String.format("图书ID:%d，名称：%s - 提取成功\n", book.getId(), book.getTitle()));
                         }
                     } catch (Exception e) {

@@ -7,5 +7,5 @@ public interface PdfService {
      * @param bookId 书籍ID
      * @return 处理结果
      */
-    String extractText(String filePath, Long bookId);
+    String extractText(String filePath, Long bookId, String title);
 } 

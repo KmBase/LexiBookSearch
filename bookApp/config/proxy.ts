@@ -22,8 +22,8 @@ console.log('VITE_DEEPSEEK_API_KEY:', process.env.VITE_DEEPSEEK_API_KEY);
 export default {
   dev: {
     '/api/': {
-      target: 'http://192.168.50.88:9090',
-      // target: 'http://localhost:9090',
+      // target: 'http://192.168.50.88:9090',
+      target: 'http://localhost:9090',
       changeOrigin: true,
       pathRewrite: { '^/api': '' },
     },
