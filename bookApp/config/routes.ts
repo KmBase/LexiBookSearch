@@ -57,7 +57,7 @@ export default [
   },
   {
     path: '/book',
-    name: '图书管理',
+    name: '文档管理',
     icon: 'book',
     routes: [
       {
@@ -66,13 +66,13 @@ export default [
       },
       {
         path: '/book/list',
-        name: '图书列表',
+        name: '文档列表',
         icon: 'table',
         component: './Book/List',
       },
       {
         path: '/book/search',
-        name: '图书搜索',
+        name: '文档搜索',
         icon: 'search',
         component: './Book/Search',
       },
@@ -120,7 +120,7 @@ export default [
     component: './FullTextSearch'
   },
   {
-    name: '阅读笔记',
+    name: '检索笔记',
     path: '/note',
     icon: 'ToolOutlined',
     component: './Note',
