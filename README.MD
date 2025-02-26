@@ -43,12 +43,23 @@
 4. 文档管理
 ![文档管理](./demoPic/book_manage.png)
 > 支持图书及其他PDF文档导入
-> 支持图书基本信息一键搜刮
 > 支持图书标签分类
+
+![文档管理-批量导入](./demoPic/import_document.gif)
+> 支持批量导入
+
+![文档管理-图书基本信息搜刮](./demoPic/get_book_info.gif)
+> 支持图书基本信息一键搜刮
+
+![文档管理-文档标签设置](./demoPic/set_tags.gif)
+> 支持文档标签设置
 
 5. 文档检索
 ![文档检索](./demoPic/book_search.png)
 > 文档基本检索
+
+![文档检索-高级检索](./demoPic/book_list_search.gif)
+
 ![文档预览](./demoPic/book_preview.png)
 > 文档全文预览
 
@@ -64,6 +75,8 @@
 ![全文检索](./demoPic/full_text_search.png)
 > 检索结果关键词高亮显示、按条件过滤、命中书籍页面关键词高亮显示
 
+![全文检索](./demoPic/full_text_search.gif)
+
 ![全文检索-按条件过滤](./demoPic/full_text_search_filter.png)
 
 ![全文检索-按条件过滤](./demoPic/full_text_search_filter2.png)
@@ -72,9 +85,8 @@
 ![全文检索-高级检索](./demoPic/full_text_search_advanced.png)
 > 支持高级检索：支持多字段多条件检索，支持同段、同句检索
 
-
 9. 添加笔记
-![添加笔记](./demoPic/add_note.png)
+![笔记](./demoPic/note.gif)
 > 支持在PDF页面中选中文本添加为笔记，可添加到指定检索报告中（通过在检索报告页面设置关联菜单）
 
 10. 检索报告&笔记管理
@@ -368,7 +380,9 @@ yarn dev
 
 ## 使用说明  
 
-**注意！注意！注意！全文检索系基于OCR处理后的文本层，如要实现PDF全文检索，PDF文档导入系统前需经过OCR处理。**
+**注意！注意！注意！全文检索系基于OCR处理后的文本层，如要实现PDF全文检索，PDF文档导入系统前需经过OCR处理。**   
+**OCR的精确度很大程度决定全文检索的准确性。**
+> 章节管理以及索引管理页面可以看到实际的OCR结果。
 
 **请务必按顺序操作：导入/添加图书信息 --> 获取OPAC数据（如不希望获取可以跳过） --> 添加标签分类（如不希望添加可以跳过） --> 抽取内容并建立索引 --> 全文检索；**
 
