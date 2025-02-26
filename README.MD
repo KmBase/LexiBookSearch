@@ -77,11 +77,6 @@
 
 ![全文检索](./demoPic/full_text_search.gif)
 
-![全文检索-按条件过滤](./demoPic/full_text_search_filter.png)
-
-![全文检索-按条件过滤](./demoPic/full_text_search_filter2.png)
-> 多条件过滤
-
 ![全文检索-高级检索](./demoPic/full_text_search_advanced.png)
 > 支持高级检索：支持多字段多条件检索，支持同段、同句检索
 
