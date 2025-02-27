@@ -62,29 +62,36 @@ public class ElasticsearchInitializer implements CommandLineRunner {
                     .exists(ExistsRequest.of(e -> e.index(indexName)))
                     .value();
 
+                //如果索引存在，则不进行创建
                 if (indexExists) {
-                    // 获取现有索引的映射
-                    GetIndexResponse getIndexResponse = elasticsearchClient.indices().get(
-                        GetIndexRequest.of(g -> g.index(indexName))
-                    );
-                    JSONObject currentMappingJson = JSONUtil.parseObj(getIndexResponse.get(indexName).mappings().toString().replace("TypeMapping: ", ""));
-                    
-                    // 比较映射结构
-                    if (expectedMappings.equals(currentMappingJson)) {
-                        log.info("Index {} exists and mapping is up to date", indexName);
-                        return;
-                    }
-
-                    log.info("Index {} exists but mapping is different, recreating index", indexName);
-                    
-                    // 删除现有索引
-                    DeleteIndexResponse deleteResponse = elasticsearchClient.indices()
-                        .delete(DeleteIndexRequest.of(d -> d.index(indexName)));
-                    
-                    if (!deleteResponse.acknowledged()) {
-                        throw new RuntimeException("Failed to delete existing index " + indexName);
-                    }
+                    log.info("Index {} exists and mapping is up to date", indexName);
+                    return;
                 }
+
+                //TODO 可能存在逻辑错误，待进一步核验
+                // if (indexExists) {
+                //     // 获取现有索引的映射
+                //     GetIndexResponse getIndexResponse = elasticsearchClient.indices().get(
+                //         GetIndexRequest.of(g -> g.index(indexName))
+                //     );
+                //     JSONObject currentMappingJson = JSONUtil.parseObj(getIndexResponse.get(indexName).mappings().toString().replace("TypeMapping: ", ""));
+                    
+                //     // 比较映射结构
+                //     if (expectedMappings.equals(currentMappingJson)) {
+                //         log.info("Index {} exists and mapping is up to date", indexName);
+                //         return;
+                //     }
+
+                //     log.info("Index {} exists but mapping is different, recreating index", indexName);
+                    
+                //     // 删除现有索引
+                //     DeleteIndexResponse deleteResponse = elasticsearchClient.indices()
+                //         .delete(DeleteIndexRequest.of(d -> d.index(indexName)));
+                    
+                //     if (!deleteResponse.acknowledged()) {
+                //         throw new RuntimeException("Failed to delete existing index " + indexName);
+                //     }
+                // }
 
                 // 创建索引
                 CreateIndexResponse response = elasticsearchClient.indices()
