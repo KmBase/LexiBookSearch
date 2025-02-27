@@ -78,5 +78,9 @@ coverage/
 *.seed
 *.pid.lock
 
+# 新增的 .yarn 目录
+.yarn/
+.idea/
+.vscode/
 
 
