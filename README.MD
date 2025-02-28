@@ -1,6 +1,9 @@
 # 律π -- 知识管理系统
 一个基于Spring Boot + React的前后端分离 知识管理平台，具备（针对已OCR的）PDF文档/图书管理与全文检索功能，并接入AI大模型。
 
+![项目架构图](./demoPic/architecture_diagram.svg)
+
+
 ## 目录
 - [功能特性](#功能特性)
 - [技术栈](#技术栈)
