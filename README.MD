@@ -3,6 +3,7 @@
 
 ![项目架构图](./demoPic/architecture_diagram.svg)
 
+![核心业务流程](./demoPic/pdf_search_highlight_flow.svg)
 
 ## 目录
 - [功能特性](#功能特性)

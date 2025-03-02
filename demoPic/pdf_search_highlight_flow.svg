@@ -115,160 +115,160 @@
   </defs>
 
   <!-- 整体框架 -->
-  <rect x="30" y="40" width="1140" height="640" class="section"/>
+  <rect x="30" y="40" width="1140" height="680" class="section"/>
 
   <!-- 标题 -->
-  <text x="600" y="30" class="title">PDF文档全文检索与高亮显示业务逻辑图</text>
+  <text x="600" y="80" class="title">PDF文档全文检索与高亮显示业务逻辑图</text>
 
   <!-- 数据存储图例 -->
-  <text x="100" y="80" class="phase-label">数据存储说明:</text>
+  <text x="100" y="100" class="phase-label">数据存储说明:</text>
   
-  <rect x="100" y="90" width="15" height="15" class="db-box"/>
-  <text x="125" y="102" class="legend-item">MinIO - 存储PDF原始文件</text>
+  <rect x="100" y="110" width="15" height="15" class="db-box"/>
+  <text x="125" y="122" class="legend-item">MinIO - 存储PDF原始文件</text>
   
-  <rect x="300" y="90" width="15" height="15" class="db-box"/>
-  <text x="325" y="102" class="legend-item">MySQL - 存储PDF文本层内容(OCR结果)</text>
+  <rect x="300" y="110" width="15" height="15" class="db-box"/>
+  <text x="325" y="122" class="legend-item">MySQL - 存储PDF文本层内容(OCR结果)</text>
   
-  <rect x="550" y="90" width="15" height="15" class="db-box"/>
-  <text x="575" y="102" class="legend-item">Elasticsearch - 存储索引和搜索数据</text>
+  <rect x="550" y="110" width="15" height="15" class="db-box"/>
+  <text x="575" y="122" class="legend-item">Elasticsearch - 存储索引和搜索数据</text>
 
   <!-- 处理步骤图例 -->
-  <rect x="780" y="90" width="15" height="15" class="process-box"/>
-  <text x="805" y="102" class="legend-item">处理步骤</text>
+  <rect x="780" y="110" width="15" height="15" class="process-box"/>
+  <text x="805" y="122" class="legend-item">处理步骤</text>
   
-  <rect x="900" y="90" width="15" height="15" class="user-box"/>
-  <text x="925" y="102" class="legend-item">用户操作</text>
+  <rect x="900" y="110" width="15" height="15" class="user-box"/>
+  <text x="925" y="122" class="legend-item">用户操作</text>
   
-  <rect x="1020" y="90" width="15" height="15" class="frontend-process"/>
-  <text x="1045" y="102" class="legend-item">前端处理</text>
+  <rect x="1020" y="110" width="15" height="15" class="frontend-process"/>
+  <text x="1045" y="122" class="legend-item">前端处理</text>
 
   <!-- 第一阶段：文档上传与处理 -->
-  <text x="100" y="140" class="phase-label">第一阶段：文档上传与处理</text>
+  <text x="100" y="160" class="phase-label">第一阶段：文档上传与处理</text>
   
   <!-- 用户上传PDF -->
-  <rect x="100" y="160" width="120" height="60" class="user-box"/>
-  <text x="160" y="195" class="box-title">用户上传PDF</text>
+  <rect x="100" y="180" width="120" height="60" class="user-box"/>
+  <text x="160" y="215" class="box-title">用户上传PDF</text>
   
   <!-- MinIO存储 -->
-  <rect x="300" y="160" width="120" height="60" class="db-box"/>
-  <text x="360" y="185" class="box-title">MinIO存储</text>
-  <text x="360" y="205" class="text">存储原始PDF文件</text>
+  <rect x="300" y="180" width="120" height="60" class="db-box"/>
+  <text x="360" y="205" class="box-title">MinIO存储</text>
+  <text x="360" y="225" class="text">存储原始PDF文件</text>
   
   <!-- PDFBox处理 -->
-  <rect x="500" y="160" width="120" height="60" class="process-box"/>
-  <text x="560" y="185" class="box-title">PDFBox处理</text>
-  <text x="560" y="205" class="text">提取文本层</text>
+  <rect x="500" y="180" width="120" height="60" class="process-box"/>
+  <text x="560" y="205" class="box-title">PDFBox处理</text>
+  <text x="560" y="225" class="text">提取文本层</text>
   
   <!-- MySQL存储 -->
-  <rect x="700" y="160" width="120" height="60" class="db-box"/>
-  <text x="760" y="185" class="box-title">MySQL数据库</text>
-  <text x="760" y="205" class="text">存储文本层内容</text>
+  <rect x="700" y="180" width="120" height="60" class="db-box"/>
+  <text x="760" y="205" class="box-title">MySQL数据库</text>
+  <text x="760" y="225" class="text">存储文本层内容</text>
   
   <!-- 创建Elasticsearch索引 -->
-  <rect x="900" y="160" width="120" height="60" class="process-box"/>
-  <text x="960" y="185" class="box-title">索引创建</text>
-  <text x="960" y="205" class="text">基于MySQL数据</text>
+  <rect x="900" y="180" width="120" height="60" class="process-box"/>
+  <text x="960" y="205" class="box-title">索引创建</text>
+  <text x="960" y="225" class="text">基于MySQL数据</text>
   
   <!-- Elasticsearch存储 -->
-  <rect x="900" y="260" width="120" height="60" class="db-box"/>
-  <text x="960" y="285" class="box-title">Elasticsearch</text>
-  <text x="960" y="305" class="text">存储索引数据</text>
+  <rect x="900" y="280" width="120" height="60" class="db-box"/>
+  <text x="960" y="305" class="box-title">Elasticsearch</text>
+  <text x="960" y="325" class="text">存储索引数据</text>
   
   <!-- 连接箭头 - 第一阶段 -->
-  <line x1="220" y1="190" x2="300" y2="190" class="arrow"/>
-  <line x1="420" y1="190" x2="500" y2="190" class="arrow"/>
-  <line x1="620" y1="190" x2="700" y2="190" class="arrow"/>
-  <line x1="820" y1="190" x2="900" y2="190" class="arrow"/>
-  <line x1="960" y1="220" x2="960" y2="260" class="arrow"/>
+  <line x1="220" y1="210" x2="300" y2="210" class="arrow"/>
+  <line x1="420" y1="210" x2="500" y2="210" class="arrow"/>
+  <line x1="620" y1="210" x2="700" y2="210" class="arrow"/>
+  <line x1="820" y1="210" x2="900" y2="210" class="arrow"/>
+  <line x1="960" y1="240" x2="960" y2="280" class="arrow"/>
   
   <!-- 标注 - 第一阶段 -->
-  <text x="260" y="180" class="label">上传PDF</text>
-  <text x="460" y="180" class="label">提取文本</text>
-  <text x="660" y="180" class="label">保存文本</text>
-  <text x="860" y="180" class="label">建立索引</text>
-  <text x="930" y="240" class="label">保存索引</text>
+  <text x="260" y="200" class="label">上传PDF</text>
+  <text x="460" y="200" class="label">提取文本</text>
+  <text x="660" y="200" class="label">保存文本</text>
+  <text x="860" y="200" class="label">建立索引</text>
+  <text x="930" y="260" class="label">保存索引</text>
 
   <!-- 第二阶段：全文检索 -->
-  <text x="100" y="350" class="phase-label">第二阶段：全文检索</text>
+  <text x="100" y="370" class="phase-label">第二阶段：全文检索</text>
   
   <!-- 用户搜索 -->
-  <rect x="100" y="370" width="120" height="60" class="user-box"/>
-  <text x="160" y="395" class="box-title">用户搜索</text>
-  <text x="160" y="415" class="text">输入关键词</text>
+  <rect x="100" y="390" width="120" height="60" class="user-box"/>
+  <text x="160" y="415" class="box-title">用户搜索</text>
+  <text x="160" y="435" class="text">输入关键词</text>
   
   <!-- Elasticsearch查询 -->
-  <rect x="300" y="370" width="120" height="60" class="db-box"/>
-  <text x="360" y="395" class="box-title">Elasticsearch</text>
-  <text x="360" y="415" class="text">执行全文检索</text>
+  <rect x="300" y="390" width="120" height="60" class="db-box"/>
+  <text x="360" y="415" class="box-title">Elasticsearch</text>
+  <text x="360" y="435" class="text">执行全文检索</text>
   
   <!-- 搜索结果 -->
-  <rect x="500" y="370" width="120" height="60" class="process-box"/>
-  <text x="560" y="395" class="box-title">搜索结果</text>
-  <text x="560" y="415" class="text">文档ID、页码、片段</text>
+  <rect x="500" y="390" width="120" height="60" class="process-box"/>
+  <text x="560" y="415" class="box-title">搜索结果</text>
+  <text x="560" y="435" class="text">文档ID、页码、片段</text>
   
   <!-- 搜索结果显示 -->
-  <rect x="700" y="370" width="120" height="60" class="frontend-process"/>
-  <text x="760" y="395" class="box-title">结果显示</text>
-  <text x="760" y="415" class="text">搜索结果关键词高亮</text>
+  <rect x="700" y="390" width="120" height="60" class="frontend-process"/>
+  <text x="760" y="415" class="box-title">结果显示</text>
+  <text x="760" y="435" class="text">搜索结果关键词高亮</text>
   
   <!-- 连接箭头 - 第二阶段 -->
-  <line x1="220" y1="400" x2="300" y2="400" class="arrow"/>
-  <line x1="420" y1="400" x2="500" y2="400" class="arrow"/>
-  <line x1="620" y1="400" x2="700" y2="400" class="arrow"/>
+  <line x1="220" y1="420" x2="300" y2="420" class="arrow"/>
+  <line x1="420" y1="420" x2="500" y2="420" class="arrow"/>
+  <line x1="620" y1="420" x2="700" y2="420" class="arrow"/>
   
   <!-- 标注 - 第二阶段 -->
-  <text x="260" y="390" class="label">搜索请求</text>
-  <text x="460" y="390" class="label">返回匹配结果</text>
-  <text x="660" y="390" class="label">显示结果列表</text>
+  <text x="260" y="410" class="label">搜索请求</text>
+  <text x="460" y="410" class="label">返回匹配结果</text>
+  <text x="660" y="410" class="label">显示结果列表</text>
 
   <!-- 第三阶段：文档查看与高亮 -->
-  <text x="100" y="460" class="phase-label">第三阶段：文档查看与高亮显示</text>
+  <text x="100" y="480" class="phase-label">第三阶段：文档查看与高亮显示</text>
   
   <!-- 用户选择结果 -->
-  <rect x="100" y="480" width="120" height="60" class="user-box"/>
-  <text x="160" y="505" class="box-title">用户选择结果</text>
-  <text x="160" y="525" class="text">点击搜索结果项</text>
+  <rect x="100" y="500" width="120" height="60" class="user-box"/>
+  <text x="160" y="525" class="box-title">用户选择结果</text>
+  <text x="160" y="545" class="text">点击搜索结果项</text>
   
   <!-- MinIO获取文档 -->
-  <rect x="300" y="480" width="120" height="60" class="db-box"/>
-  <text x="360" y="505" class="box-title">MinIO</text>
-  <text x="360" y="525" class="text">获取原始PDF</text>
+  <rect x="300" y="500" width="120" height="60" class="db-box"/>
+  <text x="360" y="525" class="box-title">MinIO</text>
+  <text x="360" y="545" class="text">获取原始PDF</text>
   
   <!-- PDF.js加载PDF -->
-  <rect x="500" y="480" width="120" height="60" class="frontend-process"/>
-  <text x="560" y="505" class="box-title">PDF.js</text>
-  <text x="560" y="525" class="text">加载PDF文档</text>
+  <rect x="500" y="500" width="120" height="60" class="frontend-process"/>
+  <text x="560" y="525" class="box-title">PDF.js</text>
+  <text x="560" y="545" class="text">加载PDF文档</text>
   
   <!-- 关键词高亮处理 -->
-  <rect x="700" y="480" width="150" height="60" class="frontend-process"/>
-  <text x="775" y="505" class="box-title">关键词高亮处理</text>
-  <text x="775" y="525" class="text">HTML渲染高亮关键词</text>
+  <rect x="700" y="500" width="150" height="60" class="frontend-process"/>
+  <text x="775" y="525" class="box-title">关键词高亮处理</text>
+  <text x="775" y="545" class="text">HTML渲染高亮关键词</text>
   
   <!-- 最终显示 -->
-  <rect x="900" y="480" width="120" height="60" class="user-box"/>
-  <text x="960" y="505" class="box-title">用户界面</text>
-  <text x="960" y="525" class="text">显示高亮PDF页面</text>
+  <rect x="900" y="500" width="120" height="60" class="user-box"/>
+  <text x="960" y="525" class="box-title">用户界面</text>
+  <text x="960" y="545" class="text">显示高亮PDF页面</text>
   
   <!-- 连接箭头 - 第三阶段 -->
-  <line x1="220" y1="510" x2="300" y2="510" class="arrow"/>
-  <line x1="420" y1="510" x2="500" y2="510" class="arrow"/>
-  <line x1="620" y1="510" x2="700" y2="510" class="arrow"/>
-  <line x1="850" y1="510" x2="900" y2="510" class="arrow"/>
+  <line x1="220" y1="530" x2="300" y2="530" class="arrow"/>
+  <line x1="420" y1="530" x2="500" y2="530" class="arrow"/>
+  <line x1="620" y1="530" x2="700" y2="530" class="arrow"/>
+  <line x1="850" y1="530" x2="900" y2="530" class="arrow"/>
   
   <!-- 关联线 - 重新设计，避免交叉 -->
   <!-- Elasticsearch到全文检索 -->
-  <path d="M 900,290 L 860,290 L 860,330 L 360,330 L 360,370" class="relation-line"/>
+  <path d="M 900,310 L 860,310 L 860,350 L 360,350 L 360,390" class="relation-line"/>
   
   <!-- 第一阶段MinIO到第三阶段MinIO的连接 -->
-  <path d="M 360,220 L 360,240 L 60,240 L 60,570 L 360,570 L 360,540" class="relation-line"/>
+  <path d="M 360,240 L 360,260 L 60,260 L 60,590 L 360,590 L 360,560" class="relation-line"/>
   
   <!-- 标注 - 第三阶段 -->
-  <text x="260" y="500" class="label">选择文档</text>
-  <text x="460" y="500" class="label">原始PDF页面</text>
-  <text x="660" y="500" class="label">自定义页面</text>
-  <!-- <text x="880" y="500" class="label">显示高亮页面</text> -->
+  <text x="260" y="520" class="label">选择文档</text>
+  <text x="460" y="520" class="label">原始PDF页面</text>
+  <text x="660" y="520" class="label">自定义页面</text>
+  <!-- <text x="880" y="520" class="label">显示高亮页面</text> -->
   
   <!-- 关联标注 -->
-  <text x="600" y="320" class="label" fill="#0288D1">提供检索数据</text>
-  <text x="195" y="590" class="label" fill="#0288D1">获取原始文档</text>
+  <text x="600" y="340" class="label" fill="#0288D1">提供检索数据</text>
+  <text x="195" y="610" class="label" fill="#0288D1">获取原始文档</text>
 </svg> 
