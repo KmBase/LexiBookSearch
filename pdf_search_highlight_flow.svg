@@ -1,0 +1,5 @@
+  <!-- 整体框架 -->
+  <rect x="40" y="40" width="1120" height="640" class="section"/>
+
+  <!-- 标题 -->
+  <text x="600" y="30" class="title">PDF文档全文检索与高亮显示业务逻辑图</text> 

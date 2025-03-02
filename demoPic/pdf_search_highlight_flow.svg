@@ -115,10 +115,10 @@
   </defs>
 
   <!-- 整体框架 -->
-  <rect x="50" y="50" width="1100" height="620" class="section"/>
+  <rect x="30" y="40" width="1140" height="640" class="section"/>
 
   <!-- 标题 -->
-  <text x="600" y="40" class="title">PDF文档全文检索与高亮显示业务逻辑图</text>
+  <text x="600" y="30" class="title">PDF文档全文检索与高亮显示业务逻辑图</text>
 
   <!-- 数据存储图例 -->
   <text x="100" y="80" class="phase-label">数据存储说明:</text>
