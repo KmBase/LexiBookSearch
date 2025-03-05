@@ -27,25 +27,29 @@ function CustomRefinementList(props: any) {
       </div>
       <div style={{ fontSize:16, overflowY: 'auto', overflowX: 'hidden'}}>
         <ul style={{padding:0}}>
-          <Space direction="vertical" style={{ width: '100%' }}>
-            {items.map((item) => (
-              <li key={item.label} style={{display:'flex',alignItems:'center'}}>
-                <Checkbox
-                  checked={item.isRefined}
-                  onChange={() => refine(item.value)}
-                  style={{ borderRadius: '10%' }}
-                >
-                  <span style={{ fontSize: 14, lineHeight: 0.5 }}>
-                    {props.options && props.options.length > 0
-                      ? props.options.find((option: any) => String(option.value) === String(item.label))?.label || item.label
-                      : item.label}
-                  </span>
-                  <Tag color="default" style={{ marginLeft: 8 }}>
-                    {item.count}
-                  </Tag>
-                </Checkbox>
-              </li>
-            ))}
+        <Space direction="vertical" style={{ width: '100%' }}>
+            {items.length === 0 ? (
+              <div style={{textAlign:'center',marginTop:10,color:'#999'}}>请添加过滤条件数据</div>
+            ) : (
+              items.map((item) => (
+                <li key={item.label} style={{display:'flex',alignItems:'center'}}>
+                  <Checkbox
+                    checked={item.isRefined}
+                    onChange={() => refine(item.value)}
+                    style={{ borderRadius: '10%' }}
+                  >
+                    <span style={{ fontSize: 14, lineHeight: 0.5 }}>
+                      {props.options && props.options.length > 0
+                        ? props.options.find((option: any) => String(option.value) === String(item.label))?.label || item.label
+                        : item.label}
+                    </span>
+                    <Tag color="default" style={{ marginLeft: 8 }}>
+                      {item.count}
+                    </Tag>
+                  </Checkbox>
+                </li>
+              ))
+            )}
           </Space>
         </ul>
       </div>

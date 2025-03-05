@@ -17,6 +17,7 @@ node_modules
 
 # 编译输出
 /bookMS/target/
+/bookMS/src/main/resources/application-dev.yml
 /bookApp/dist/
 /bookApp/.idea/
 /bookApp/src/.umi

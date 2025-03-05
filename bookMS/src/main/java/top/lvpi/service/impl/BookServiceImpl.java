@@ -695,4 +695,72 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
                 .distinct()
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public IPage<BookVO> convertToBookVOPage(IPage<Book> bookPage) {
+        // 1. 首先，将LpBook转换为BookVO
+        List<BookVO> bookVOList = bookPage.getRecords().stream().map(book -> {
+            BookVO bookVO = new BookVO();
+            BeanUtils.copyProperties(book, bookVO);
+            // 获取图书标签
+            bookVO.setTags(topicService.getBookTopicTags(book.getId()));
+            return bookVO;
+        }).collect(Collectors.toList());
+        
+        // 2. 构建BookVO的分页对象
+        Page<BookVO> bookVOPage = new Page<>(bookPage.getCurrent(), bookPage.getSize(), bookPage.getTotal());
+        bookVOPage.setRecords(bookVOList);
+        
+        return bookVOPage;
+    }
+    
+    @Override
+    public List<Book> listBooksForTopicParsing() {
+        LambdaQueryWrapper<Book> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.isNotNull(Book::getTopic)
+                .ne(Book::getTopic, "")
+                .and(w -> w.isNull(Book::getHasParseOPACTopic)
+                        .or()
+                        .eq(Book::getHasParseOPACTopic, 0))
+                .eq(Book::getIsDeleted, 0); // 只查询未删除的图书
+        
+        return bookMapper.selectList(queryWrapper);
+    }
+    
+    @Override
+    public boolean parseBookOPACTopics(Long bookId) {
+        // 1. 获取图书信息
+        Book book = getById(bookId);
+        if (book == null || book.getTopic() == null || book.getTopic().isEmpty()) {
+            log.warn("图书不存在或无主题字段，bookId={}", bookId);
+            return false;
+        }
+        
+        try {
+            // 2. 调用主题服务解析OPAC主题
+            boolean result = topicService.parseBookOPACTopics(bookId, book.getTopic());
+            
+            // 3. 更新图书的主题解析状态
+            if (result) {
+                return markTopicParseStatus(bookId, true);
+            } else {
+                log.warn("解析图书主题失败，bookId={}", bookId);
+                return markTopicParseStatus(bookId, false);
+            }
+        } catch (Exception e) {
+            log.error("解析图书主题出错，bookId={}", bookId, e);
+            markTopicParseStatus(bookId, false);
+            return false;
+        }
+    }
+    
+    @Override
+    public boolean markTopicParseStatus(Long bookId, boolean success) {
+        // 更新图书的主题解析状态
+        Book updateBook = new Book();
+        updateBook.setId(bookId);
+        updateBook.setHasParseOPACTopic(success ? 1 : 2); // 1表示成功，2表示失败
+        
+        return updateById(updateBook);
+    }
 } 

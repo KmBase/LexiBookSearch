@@ -22,7 +22,7 @@ function CustomStats() {
           </Text>
         </Space>
         <Space size={4}>
-          <ClockCircleOutlined style={{ color: processingTimeMS > 50 ? 'red' : '#52c41a' }} />
+          <ClockCircleOutlined style={{ color: processingTimeMS > 500 ? 'red' : '#52c41a' }} />
           <Text>
             耗时 <Text>{processingTimeMS.toLocaleString()}</Text> 毫秒
           </Text>

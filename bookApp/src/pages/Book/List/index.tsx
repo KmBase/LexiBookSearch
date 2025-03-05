@@ -26,6 +26,11 @@ const BookList: React.FC = () => {
   const [extractBatchStatus, setExtractBatchStatus] = useState<string>('');
   const [categories, setCategories] = useState<Record<string, { text: string }>>({});
 
+  // 批量解析OPAC主题标签相关状态
+  const [batchParseTopicModalVisible, setBatchParseTopicModalVisible] = useState(false);
+  const [batchParseTopicStatus, setBatchParseTopicStatus] = useState('');
+  const [parseTopicProgress, setParseTopicProgress] = useState<any>(null);
+
   // 获取分类数据
   const fetchCategories = async () => {
     try {
@@ -346,7 +351,7 @@ const BookList: React.FC = () => {
         setBatchOpacModalVisible(true);
         
         try {
-          const response = await request('/api/book/opac/batch', {
+            const response = await request('/api/book/opac/batch', {
             method: 'POST',
           });
 
@@ -397,6 +402,69 @@ const BookList: React.FC = () => {
         } catch (error) {
           setBatchOpacStatus('初始化任务失败');
           message.error('批量获取失败');
+        }
+      },
+    });
+  };
+
+  // 批量解析OPAC主题标签
+  const handleBatchParseOPACTopics = async () => {
+    Modal.confirm({
+      title: '确认批量解析',
+      content: '确定要批量解析所有未处理的OPAC主题标签吗？',
+      onOk: async () => {
+        setBatchParseTopicStatus('正在初始化任务...');
+        setBatchParseTopicModalVisible(true);
+        
+        try {
+          const response = await request('/api/book/opac/topics/batch', {
+            method: 'POST',
+          });
+
+          if (response.code === 20001) {
+            // 获取任务ID
+            const taskId = response.message.split('任务ID:')[1];
+            
+            // 开始轮询任务状态
+            const interval = setInterval(async () => {
+              try {
+                  const resultResponse = await request(`/api/book/opac/topics/batch/status/${taskId}`, {
+                  method: 'GET',
+                });
+                
+                if (resultResponse.code === 0) {
+                  const progress = resultResponse.data;
+                  setParseTopicProgress(progress);
+                  setBatchParseTopicStatus(`${progress.currentStep}`);
+                  
+                  // 如果任务完成或失败
+                  if (progress.status !== 0) {
+                    clearInterval(interval);
+                    if (progress.status === 1) {
+                      setBatchParseTopicStatus(progress.result || '批量解析完成');
+                      message.success('批量解析完成');
+                      actionRef.current?.reload();
+                    } else {
+                      setBatchParseTopicStatus(progress.errorMessage || '批量解析失败');
+                      message.error('批量解析失败: ' + progress.errorMessage);
+                    }
+                  }
+                }
+              } catch (error) {
+                clearInterval(interval);
+                setBatchParseTopicStatus('查询任务状态失败');
+                message.error('查询任务状态失败');
+                console.error(error);
+              }
+            }, 2000); // 每2秒查询一次
+          } else {
+            setBatchParseTopicStatus('初始化任务失败');
+            message.error(response.message || '初始化任务失败');
+          }
+        } catch (error) {
+          setBatchParseTopicStatus('初始化任务失败');
+          message.error('初始化任务失败');
+          console.error(error);
         }
       },
     });
@@ -739,6 +807,62 @@ const BookList: React.FC = () => {
     },
   ];
 
+  const toolBarRender = () => [
+    <Upload
+      key="upload"
+      accept=".xlsx,.xls"
+      showUploadList={false}
+      beforeUpload={(file) => {
+        handleExcelUpload(file);
+        return false;
+      }}
+    >
+      <Button loading={importLoading}> 
+      <DownloadOutlined /> 导入
+      <Tooltip title="请上传 Excel 文件（.xlsx 或 .xls 格式）进行批量导入；注意书名不得包含冒号，如包含则默认用空格替代。" placement="top">
+          <InfoCircleOutlined style={{ color: 'red' }} />
+        </Tooltip>
+      </Button>
+    </Upload>,
+    <Button
+      type="default"
+      key="default"
+      onClick={handleBatchGetOpacInfo}
+    >
+      <CloudDownloadOutlined /> 批量获取OPAC
+    </Button>,
+    <Button 
+      type="default"
+      key="batchParseTopics" 
+      onClick={handleBatchParseOPACTopics}
+      icon={<ImportOutlined />}
+    >
+      批量解析主题标签
+    </Button>,
+    <Button
+      key="batchExtract"
+      onClick={() => {
+        Modal.confirm({
+          title: '批量提取',
+          content: '确定要批量提取所有未处理的图书吗？注意：提取过程可能需要较长时间，请耐心等待，切勿重复提交任务。',
+          onOk: () => handleBatchExtractAndImport(),
+        });
+      }}
+    >
+      <FilePdfOutlined /> 提取&索引
+    </Button>,
+    <Button
+      type="primary"
+      key="primary"
+      onClick={() => {
+        setCurrentRow(undefined);
+        handleModalVisible(true);
+      }}
+    >
+      <PlusOutlined /> 新增
+    </Button>,
+  ];
+
   return (
     <PageContainer>
       <ProTable<BookItem>
@@ -750,55 +874,7 @@ const BookList: React.FC = () => {
           defaultCollapsed: false,
           span: 6,
         }}
-        toolBarRender={() => [
-          <Upload
-            key="upload"
-            accept=".xlsx,.xls"
-            showUploadList={false}
-            beforeUpload={(file) => {
-              handleExcelUpload(file);
-              return false;
-            }}
-          >
-            <Button loading={importLoading}> 
-            <DownloadOutlined /> 导入
-            <Tooltip title="请上传 Excel 文件（.xlsx 或 .xls 格式）进行批量导入；注意书名不得包含冒号，如包含则默认用空格替代。" placement="top">
-                <InfoCircleOutlined style={{ color: 'red' }} />
-              </Tooltip>
-            </Button>
-          </Upload>,
-          <Button
-            type="default"
-            key="default"
-            onClick={
-              handleBatchGetOpacInfo
-            }
-          >
-            <CloudDownloadOutlined /> 获取OPAC
-          </Button>,
-          <Button
-            key="batchExtract"
-            onClick={() => {
-              Modal.confirm({
-                title: '批量提取',
-                content: '确定要批量提取所有未处理的图书吗？注意：提取过程可能需要较长时间，请耐心等待，切勿重复提交任务。',
-                onOk: () => handleBatchExtractAndImport(),
-              });
-            }}
-          >
-            <FilePdfOutlined /> 提取&索引
-          </Button>,
-          <Button
-            type="primary"
-            key="primary"
-            onClick={() => {
-              setCurrentRow(undefined);
-              handleModalVisible(true);
-            }}
-          >
-            <PlusOutlined /> 新增
-          </Button>,
-        ]}
+        toolBarRender={toolBarRender}
         request={async (params) => {
           const { current, pageSize, ...restParams } = params;
           const response = await request('/api/book/list', {
@@ -955,6 +1031,64 @@ const BookList: React.FC = () => {
               borderRadius: '4px'
             }}>
               <p style={{ color: '#ff4d4f', whiteSpace: 'pre-wrap' }}>{opacProgress.errorMessage}</p>
+            </div>
+          )}
+        </div>
+      </Modal>
+
+      <Modal
+        title="批量解析OPAC主题标签进度"
+        open={batchParseTopicModalVisible}
+        footer={null}
+        onCancel={() => setBatchParseTopicModalVisible(false)}
+        width={600}
+        bodyStyle={{ 
+          maxHeight: 'calc(100vh - 200px)',
+          overflowY: 'auto',
+          padding: '24px'
+        }}
+      >
+        <div style={{ marginBottom: '24px' }}>
+          <div style={{ marginBottom: '16px' }}>
+            <Progress 
+              percent={parseTopicProgress?.progress || 0} 
+              status={
+                !parseTopicProgress ? 'normal' :
+                parseTopicProgress.status === 0 ? 'active' :
+                parseTopicProgress.status === 1 ? 'success' : 'exception'
+              }
+              strokeWidth={10}
+            />
+          </div>
+          <div style={{ marginBottom: '8px', fontSize: '14px', color: 'rgba(0, 0, 0, 0.85)' }}>
+            {batchParseTopicStatus && parseTopicProgress && batchParseTopicStatus !== parseTopicProgress.result ? batchParseTopicStatus : null}
+          </div>
+          <div style={{ fontSize: '12px', color: 'rgba(0, 0, 0, 0.45)', marginBottom: '16px' }}>
+            关闭进度窗口不影响后台任务的执行，但切勿重复提交任务。
+          </div>
+          {parseTopicProgress?.status === 1 && parseTopicProgress.result && (
+            <div style={{ 
+              marginTop: '16px',
+              padding: '16px',
+              background: '#f6ffed',
+              border: '1px solid #b7eb8f',
+              borderRadius: '4px'
+            }}>
+              <div 
+                style={{ whiteSpace: 'pre-wrap' }}
+                dangerouslySetInnerHTML={{ __html: parseTopicProgress.result.replace(/\n/g, '<br>') }} 
+              />
+            </div>
+          )}
+          {parseTopicProgress?.status === 2 && parseTopicProgress.errorMessage && (
+            <div style={{ 
+              marginTop: '16px',
+              padding: '16px',
+              background: '#fff2f0',
+              border: '1px solid #ffccc7',
+              borderRadius: '4px'
+            }}>
+              <p style={{ color: '#ff4d4f', whiteSpace: 'pre-wrap' }}>{parseTopicProgress.errorMessage}</p>
             </div>
           )}
         </div>

@@ -949,4 +949,118 @@ public class BookController {
         
         return BaseResponse.success(progress);
     }
+
+    @Operation(summary = "批量自动解析OPAC主题标签", description = "自动解析所有未处理的OPAC主题标签信息")
+    @PostMapping("/opac/topics/batch")
+    public BaseResponse<String> batchParseOPACTopics() {
+        // 生成唯一的任务ID
+        String taskId = UUID.randomUUID().toString();
+        
+        // 初始化任务进度
+        TaskProgress taskProgress = new TaskProgress()
+            .setTaskId(taskId)
+            .setStatus(0)
+            .setProgress(0)
+            .setCurrentStep("初始化批量解析OPAC主题标签任务");
+        taskProgressMap.put(taskId, taskProgress);
+        
+        // 提交异步任务
+        CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
+            try {
+                // 更新进度：开始获取待处理图书列表
+                taskProgress.setProgress(10)
+                    .setCurrentStep("获取待处理图书列表");
+                
+                // 查询需要处理的图书（has_parse_opac_topic为null或0，且topic字段不为null的记录）
+                List<Book> books = bookService.listBooksForTopicParsing();
+                
+                if (books.isEmpty()) {
+                    taskProgress.setProgress(100)
+                        .setStatus(2)
+                        .setCurrentStep("没有需要解析OPAC主题标签的图书");
+                    return "没有需要解析OPAC主题标签的图书";
+                }
+                
+                int total = books.size();
+                log.info("找到{}本需要解析OPAC主题标签的图书", total);
+                
+                // 更新进度：开始处理
+                taskProgress.setProgress(20)
+                    .setCurrentStep("开始解析OPAC主题标签，共" + total + "本图书");
+                
+                int processed = 0;
+                int success = 0;
+                int failed = 0;
+                
+                // 逐个处理图书
+                for (Book book : books) {
+                    try {
+                        if (book.getTopic() != null && !book.getTopic().isEmpty()) {
+                            // 解析主题标签
+                            boolean result = bookService.parseBookOPACTopics(book.getId());
+                            if (result) {
+                                success++;
+                            } else {
+                                failed++;
+                            }
+                        } else {
+                            // 没有主题，标记为已处理
+                            bookService.markTopicParseStatus(book.getId(), false);
+                            failed++;
+                        }
+                    } catch (Exception e) {
+                        log.error("解析图书ID={}的OPAC主题标签时出错", book.getId(), e);
+                        failed++;
+                    }
+                    
+                    // 更新处理进度
+                    processed++;
+                    int progress = 20 + (processed * 80 / total);
+                    taskProgress.setProgress(progress)
+                        .setCurrentStep(String.format("已处理 %d/%d 本图书，成功：%d，失败：%d", 
+                                        processed, total, success, failed));
+                }
+                
+                // 任务完成
+                taskProgress.setProgress(100)
+                    .setStatus(1)
+                    .setCurrentStep(String.format("任务完成，共处理 %d 本图书，成功：%d，失败：%d", 
+                                total, success, failed));
+                
+                return String.format("批量解析OPAC主题标签完成，共处理 %d 本图书，成功：%d，失败：%d", 
+                                     total, success, failed);
+                
+            } catch (Exception e) {
+                log.error("批量解析OPAC主题标签时出错", e);
+                taskProgress.setStatus(-1)
+                    .setCurrentStep("处理失败：" + e.getMessage());
+                return "处理失败：" + e.getMessage();
+            }
+        });
+        
+        // 存储任务结果
+        taskResults.put(taskId, future);
+        
+        return BaseResponse.success(20001, "任务已开始，任务ID:" + taskId);
+    }
+    
+    @Operation(summary = "查询批量解析OPAC主题标签任务状态", description = "根据任务ID查询批量解析OPAC主题标签任务的执行状态")
+    @GetMapping("/opac/topics/batch/status/{taskId}")
+    public BaseResponse<TaskProgress> getBatchParseOPACTopicsStatus(@PathVariable("taskId") String taskId) {
+        TaskProgress progress = taskProgressMap.get(taskId);
+        if (progress == null) {
+            return BaseResponse.error(ErrorCode.NOT_FOUND_ERROR, "任务ID不存在");
+        }
+        
+        // 如果任务已完成，从映射中移除
+        if (progress.getStatus() != 0) {
+            taskProgressMap.remove(taskId);
+            taskResults.remove(taskId);
+        }
+        
+        return BaseResponse.success(progress);
+    }
+
+
+
 } 

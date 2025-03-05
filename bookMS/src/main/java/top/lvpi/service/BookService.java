@@ -123,4 +123,33 @@ public interface BookService extends IService<Book> {
      * 获取所有非空的图书类目
      */
     List<String> getAllNonEmptyCategories();
+
+    
+    /**
+     * 将图书数据转换为BookVO分页列表
+     * @param bookPage 图书分页数据
+     * @return BookVO分页列表
+     */
+    IPage<BookVO> convertToBookVOPage(IPage<Book> bookPage);
+    
+    /**
+     * 获取所有需要解析OPAC主题标签的图书
+     * @return 需要解析主题的图书列表
+     */
+    List<Book> listBooksForTopicParsing();
+    
+    /**
+     * 解析图书的OPAC主题标签
+     * @param bookId 图书ID
+     * @return 是否解析成功
+     */
+    boolean parseBookOPACTopics(Long bookId);
+    
+    /**
+     * 标记图书的主题解析状态
+     * @param bookId 图书ID
+     * @param success 是否解析成功
+     * @return 是否操作成功
+     */
+    boolean markTopicParseStatus(Long bookId, boolean success);
 } 

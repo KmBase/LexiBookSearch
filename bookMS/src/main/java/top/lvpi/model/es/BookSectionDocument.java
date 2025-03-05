@@ -67,4 +67,9 @@ public class BookSectionDocument {
 
     @Field(name = "type", type = FieldType.Integer)
     private Integer type;
+
+    @Field(name = "category", type = FieldType.Keyword)
+    private String category;
+
+
 } 

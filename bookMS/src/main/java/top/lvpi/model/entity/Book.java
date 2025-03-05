@@ -118,6 +118,14 @@ public class Book {
     @TableField("is_opaced")
     private Integer isOpaced;
 
+    @Schema(description = "是否已解析opac主题词")
+    @TableField("has_parse_opac_topic")
+    private Integer hasParseOPACTopic;
+
+    @Schema(description = "是否已删除")
+    @TableField("is_deleted")
+    private Integer isDeleted;
+
     @Schema(description = "isbn格式化")
     @TableField("isbn_format")
     private String isbnFormat;
@@ -125,5 +133,7 @@ public class Book {
     @Schema(description = "文件类型，1表示书籍，2表示用户自定义PDF文件")
     @TableField("type")
     private Integer type;
+
+
 }
 

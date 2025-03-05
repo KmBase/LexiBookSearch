@@ -290,4 +290,14 @@ public class TopicController {
         type.put("level", level);
         return type;
     }
+
+
+    @PostMapping("/book/{bookId}/parse-opac")
+    @Operation(summary = "解析书籍OPAC主题词并建立关联")
+    public BaseResponse<Boolean> parseBookOPACTopics(@PathVariable Long bookId, @RequestParam String topicContent) {
+        logger.info("解析书籍[{}]的OPAC主题词: {}", bookId, topicContent);
+        boolean result = topicService.parseBookOPACTopics(bookId, topicContent);
+        return ResultUtils.success(result);
+    }
+
 } 

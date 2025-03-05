@@ -57,11 +57,12 @@ const sk = new Searchkit({
   },
   search_settings: {
     search_attributes: [{ field: 'section_text', weight: 1 },{ field: 'book_title', weight: 2 }],
-    result_attributes: ['id', 'book_id', 'book_title', 'author', 'publisher', 'publication_year', 'page_num','pic_path', 'file_name', 'isbn','section_text','topicLevels','tags','opac_series','series','type'],
+    result_attributes: ['id', 'book_id', 'book_title', 'author', 'publisher', 'publication_year', 'page_num','pic_path', 'file_name', 'isbn','section_text','topicLevels','tags','opac_series','series','type','category'],
     highlight_attributes: ['book_title','book_title.keyword','section_text'],
     snippet_attributes: ['book_title','section_text'],
     facet_attributes: [
-      { attribute: 'publisher', field: 'publisher', type: 'string' },
+      { attribute: 'publisher', field: 'publisher', type: 'string' }, 
+      { attribute: 'category', field: 'category', type: 'string' },
       { attribute: 'tags', field: 'tags.keyword', type: 'string' },
       { attribute: 'opac_series', field: 'opac_series.keyword', type: 'string' },
       { attribute: 'series', field: 'series.keyword', type: 'string' }, 
@@ -522,13 +523,16 @@ const FullTextSearch = () => {
                 <ProCard.TabPane key="tab5" tab="系列">
                   <CustomRefinementList attribute="series" searchable showMore />
                 </ProCard.TabPane>
-                <ProCard.TabPane key="tab6" tab="文档类型">
+                <ProCard.TabPane key="tab6" tab="分类">
+                  <CustomRefinementList attribute="category" searchable showMore />
+                </ProCard.TabPane>
+                <ProCard.TabPane key="tab7" tab="文档类型">
                   <CustomRefinementList attribute="type" searchable showMore options={typeOptions} />
                 </ProCard.TabPane>
-                <ProCard.TabPane key="tab7" tab="OPAC系列">
+                <ProCard.TabPane key="tab8" tab="OPAC系列">
                   <CustomRefinementList attribute="opac_series" searchable showMore />
                 </ProCard.TabPane>
-                <ProCard.TabPane key="tab8" tab="主题分类">
+                <ProCard.TabPane key="tab9" tab="主题分类">
                   <CustomHierarchicalMenu
                     attributes={[
                       'topics_lvl0',

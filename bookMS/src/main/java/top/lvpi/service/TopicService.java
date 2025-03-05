@@ -44,4 +44,12 @@ public interface TopicService extends IService<Topic> {
     Long importTopics(TopicImportDTO topicImportDTO);
 
     List<Topic> getBookTopicTags(Long bookId);
+        
+    /**
+     * 解析书籍OPAC主题词并建立关联
+     * @param bookId 书籍ID
+     * @param topicContent 主题词内容
+     * @return 是否处理成功
+     */
+    boolean parseBookOPACTopics(Long bookId, String topicContent);
 } 

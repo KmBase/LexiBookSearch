@@ -38,6 +38,23 @@ export default [
     component: './Welcome',
   },
   {
+    path: '/statistics',
+    name: '数据统计',
+    icon: 'BarChartOutlined',
+    routes: [
+      {
+        path: '/statistics',
+        redirect: '/statistics/analysis',
+      },
+      {
+        name: 'analysis',
+        icon: 'PieChartOutlined',
+        path: '/statistics/analysis',
+        component: './Statistics',
+      },
+    ],
+  },
+  {
     path: '/admin',
     name: '管理页',
     icon: 'crown',

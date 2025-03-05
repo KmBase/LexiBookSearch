@@ -32,6 +32,9 @@
       "author": {
         "type": "keyword"
       },
+      "category": {
+        "type": "keyword"
+      },
       "book_id": {
         "type": "keyword"
       },

@@ -287,4 +287,95 @@ public class TopicServiceImpl extends ServiceImpl<TopicMapper, Topic> implements
         return baseMapper.getBookTopicTags(bookId);
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean parseBookOPACTopics(Long bookId, String topicContent) {
+        if (org.apache.commons.lang3.StringUtils.isBlank(topicContent)) {
+            logger.info("书籍[{}]的主题词为空，跳过处理", bookId);
+            return false;
+        }
+        
+        logger.info("开始解析书籍[{}]的主题词: {}", bookId, topicContent);
+        
+        // 固定的顶级父节点ID
+        Long rootParentId = 1896773131181346817L;
+
+        //前置处理，关联根节点
+        BookTopic bookTopic = new BookTopic();
+        bookTopic.setBookId(bookId);
+        bookTopic.setTopicId(rootParentId);
+        bookTopicMapper.insert(bookTopic);  
+        
+        // 1. 按逗号分割成多组主题词
+        String[] topicGroups = topicContent.split(",");
+        
+        for (String topicGroup : topicGroups) {
+            // 跳过空组
+            if (org.apache.commons.lang3.StringUtils.isBlank(topicGroup)) {
+                continue;
+            }
+            
+            // 2. 按--分割每组中的关键词
+            String[] keywords = topicGroup.trim().split("--");
+            
+            if (keywords.length == 0) {
+                continue;
+            }
+            
+            // 从右到左处理关键词（倒序遍历）
+            Long currentParentId = rootParentId;
+            for (int i = keywords.length - 1; i >= 0; i--) {
+                String keyword = keywords[i].trim();
+                if (org.apache.commons.lang3.StringUtils.isBlank(keyword)) {
+                    continue;
+                }
+                
+                // 当前层级 (最右边的关键词level为1，向左依次增加)
+                int level = keywords.length - i;
+                
+                // 2.1 查询关键词是否存在
+                LambdaQueryWrapper<Topic> queryWrapper = new LambdaQueryWrapper<>();
+                queryWrapper.eq(Topic::getName, keyword)
+                          .eq(Topic::getLevel, level)
+                          .eq(Topic::getParentId, currentParentId);
+                          
+                Topic topic = baseMapper.selectOne(queryWrapper);
+                
+                // 2.2 不存在则创建
+                if (topic == null) {
+                    topic = new Topic();
+                    topic.setName(keyword);
+                    topic.setLevel(level);
+                    topic.setParentId(currentParentId);
+                    topic.setCreateTime(new Date());
+                    topic.setModifiedTime(new Date());
+                    baseMapper.insert(topic);
+                    logger.info("创建新主题: {}，层级: {}，父ID: {}", keyword, level, currentParentId);
+                }
+                
+                // 更新父ID为当前主题ID，用于下一个关键词
+                currentParentId = topic.getId();
+                
+                // 2.3 每个关键词都需要与书籍关联，不仅仅是最左边的关键词
+                // 检查关联是否已存在
+                // BookTopic bookTopic = new BookTopic();
+                // bookTopic.setBookId(bookId);
+                // bookTopic.setTopicId(topic.getId());
+                
+                // 查询是否已存在关联
+                LambdaQueryWrapper<BookTopic> bookTopicQuery = new LambdaQueryWrapper<>();
+                bookTopicQuery.eq(BookTopic::getBookId, bookId)
+                            .eq(BookTopic::getTopicId, topic.getId());
+                Long count = bookTopicMapper.selectCount(bookTopicQuery);
+                
+                // 不存在则添加关联
+                if (count == 0) {
+                    bookTopicMapper.insert(bookTopic);
+                    logger.info("书籍[{}]关联主题: {}", bookId, topic.getId());
+                }
+            }
+        }
+        
+        return true;
+    }
 } 
