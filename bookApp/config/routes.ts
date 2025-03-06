@@ -47,7 +47,7 @@ export default [
         redirect: '/statistics/analysis',
       },
       {
-        name: 'analysis',
+        name: '知识数据',
         icon: 'PieChartOutlined',
         path: '/statistics/analysis',
         component: './Statistics',

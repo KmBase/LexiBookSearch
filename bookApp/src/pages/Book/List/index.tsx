@@ -562,7 +562,7 @@ const BookList: React.FC = () => {
       ellipsis: true,
       // 不显示
       hidden: true,
-      search: true,
+      search: false,
     },
     {
       title: '作者',
@@ -632,6 +632,7 @@ const BookList: React.FC = () => {
       dataIndex: 'keyWord',
       width: 150,
       ellipsis: true,
+      search: false,
     },
     {
       title: '摘要',
@@ -658,7 +659,7 @@ const BookList: React.FC = () => {
       title: '丛编',
       dataIndex: 'series',
       width: 120,
-      search: true,
+      search: false,
     },
     {
       title: '页数',

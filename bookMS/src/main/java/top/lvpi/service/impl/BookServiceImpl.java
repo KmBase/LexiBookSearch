@@ -115,6 +115,9 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
         if (StringUtils.isNotBlank(bookQueryRequest.getTitle())) {
             queryWrapper.like(Book::getTitle, bookQueryRequest.getTitle());
         }
+        if (StringUtils.isNotBlank(bookQueryRequest.getIsbn())) {
+            queryWrapper.like(Book::getIsbn, bookQueryRequest.getIsbn());
+        }
         if (StringUtils.isNotBlank(bookQueryRequest.getAuthor())) {
             queryWrapper.like(Book::getAuthor, bookQueryRequest.getAuthor());
         }
@@ -634,6 +637,9 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
         // 添加查询条件
         if (StringUtils.isNotBlank(bookQueryRequest.getTitle())) {
             queryWrapper.like(Book::getTitle, bookQueryRequest.getTitle());
+        }
+        if (StringUtils.isNotBlank(bookQueryRequest.getIsbn())) {
+            queryWrapper.like(Book::getIsbn, bookQueryRequest.getIsbn());
         }
         if (StringUtils.isNotBlank(bookQueryRequest.getAuthor())) {
             queryWrapper.like(Book::getAuthor, bookQueryRequest.getAuthor());
