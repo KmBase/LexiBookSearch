@@ -1,10 +1,10 @@
-import { PlusOutlined, InfoCircleOutlined, EyeOutlined, FilePdfOutlined, EditOutlined, DeleteOutlined, ImportOutlined, UploadOutlined, CloudDownloadOutlined, DeploymentUnitOutlined, DownloadOutlined, DisconnectOutlined } from '@ant-design/icons';
+import { PlusOutlined, InfoCircleOutlined, EyeOutlined, FilePdfOutlined, EditOutlined, DeleteOutlined, ImportOutlined, CloudDownloadOutlined, DownloadOutlined, DisconnectOutlined } from '@ant-design/icons';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { PageContainer, ProTable } from '@ant-design/pro-components';
-import { Button, message, Popconfirm, Tag, Modal, Tooltip, Upload, Progress } from 'antd';
+import { Button, message, Modal, Tooltip, Upload, Progress } from 'antd';
 import { useState, useRef, useEffect } from 'react';
 import request from '@/utils/request';
-import type { BookItem } from './data.d';
+import type { BookItem } from './data';
 import BookForm from './components/BookForm';
 import { getPreviewUrl, batchExtractAndImport, getBatchExtractImportStatus } from '@/services/book';
 
@@ -98,6 +98,10 @@ const BookList: React.FC = () => {
       });
       hide();
       message.success('删除成功');
+      // 删除成功后刷新列表
+      if (actionRef.current) {
+        actionRef.current.reload();
+      }
       return true;
     } catch (error) {
       hide();
@@ -351,7 +355,7 @@ const BookList: React.FC = () => {
         setBatchOpacModalVisible(true);
         
         try {
-            const response = await request('/api/book/opac/batch', {
+          const response = await request('/api/book/opac/batch', {
             method: 'POST',
           });
 
@@ -428,7 +432,7 @@ const BookList: React.FC = () => {
             // 开始轮询任务状态
             const interval = setInterval(async () => {
               try {
-                  const resultResponse = await request(`/api/book/opac/topics/batch/status/${taskId}`, {
+                const resultResponse = await request(`/api/book/opac/topics/batch/status/${taskId}`, {
                   method: 'GET',
                 });
                 
@@ -659,7 +663,7 @@ const BookList: React.FC = () => {
       title: '丛编',
       dataIndex: 'series',
       width: 120,
-      search: false,
+      search: true,
     },
     {
       title: '页数',
@@ -724,7 +728,7 @@ const BookList: React.FC = () => {
             key="extract"
             type="link"
             icon={<FilePdfOutlined />}
-            disabled={record.isExtracted === 1}
+            disabled={record.isOcr === 1}
             onClick={() => {
               Modal.confirm({
                 title: '确认抽取',

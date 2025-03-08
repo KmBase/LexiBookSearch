@@ -8,6 +8,7 @@ import top.lvpi.model.dto.book.BookAddRequest;
 import top.lvpi.model.dto.book.BookQueryRequest;
 import top.lvpi.model.dto.book.BookUpdateRequest;
 import top.lvpi.model.entity.Book;
+import top.lvpi.model.entity.LpFile;
 import top.lvpi.model.vo.BookVO;
 import top.lvpi.service.BookService;
 import top.lvpi.service.FileService;
@@ -17,9 +18,13 @@ import top.lvpi.utils.PDFUtils;
 import cn.hutool.core.lang.UUID;
 
 import top.lvpi.service.ImgService;
+import top.lvpi.service.LpFileService;
+import top.lvpi.model.dto.file.BookFileDTO;
 import top.lvpi.model.dto.file.FileUploadResult;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -39,6 +44,7 @@ import java.util.List;
 import java.util.Arrays;
 
 import top.lvpi.model.dto.task.TaskProgress;
+import top.lvpi.service.BookFileService;
 import top.lvpi.service.BookSectionEsService;
 
 @Tag(name = "图书管理", description = "图书相关接口")
@@ -61,7 +67,13 @@ public class BookController {
     private ImgService imgService;
 
     @Autowired
+    private LpFileService lpFileService;
+
+    @Autowired
     private BookSectionEsService bookSectionEsService;
+
+    @Autowired
+    private BookFileService bookFileService;
 
     // 修改为存储TaskProgress的映射
     private final ConcurrentHashMap<String, TaskProgress> taskProgressMap = new ConcurrentHashMap<>();
@@ -137,8 +149,6 @@ public class BookController {
             return BaseResponse.error(ErrorCode.PARAMS_ERROR, "请求参数为空");
         }
         try {
-
-            
 
             // 处理多选类目参数
             String categoryStr = bookQueryRequest.getCategory();
@@ -303,27 +313,70 @@ public class BookController {
         }
     }
 
-    @Operation(summary = "上传图书封面", description = "上传图书封面图片并返回URL")
-    @PostMapping("/upload/cover/{id}")
-    public BaseResponse<String> uploadCover(
-            @Parameter(description = "图书ID") @PathVariable("id") Long id,
-            @Parameter(description = "base64图片数据") @RequestBody Map<String, String> requestBody) {
-        if (id == null || id <= 0) {
-            return BaseResponse.error(ErrorCode.PARAMS_ERROR, "图书ID不合法");
+    
+    @Operation(summary = "上传文件", description = "上传文件并返回文件id")
+    @PostMapping("/upload")
+    public BaseResponse<String> uploadFile(
+            @Parameter(description = "PDF文件") @RequestParam("file") MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            return BaseResponse.error(ErrorCode.PARAMS_ERROR, "文件不能为空");
         }
+        // 检查文件类型
+        String contentType = file.getContentType();
+        if (!"application/pdf".equals(contentType)) {
+            return BaseResponse.error(ErrorCode.PARAMS_ERROR, "只支持PDF文件");
+        }
+        //构建文件信息对象
+        LpFile lpFile = new LpFile();
+        lpFile.setFileOriginalName(file.getOriginalFilename());
+        lpFile.setFileSize(file.getSize());
+        lpFile.setFileSuffix(file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".")));
+        try {
+            lpFile.setFileMd5(DigestUtils.md5Hex(file.getBytes()));
+        } catch (IOException e) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "文件md5计算失败");
+        }
+
+        try {
+            // 上传文件
+            FileUploadResult result = fileService.uploadFile(file);
+            
+            // 更新文件信息
+            lpFile.setFileName(result.getFileName());
+
+            // 保存文件信息
+            try {
+                boolean save = lpFileService.save(lpFile);
+                if (!save) {
+                    return BaseResponse.error(ErrorCode.OPERATION_ERROR, "文件信息保存失败");
+                }
+                //返回文件id
+                return BaseResponse.success(lpFile.getFileId().toString());
+            } catch (BusinessException e) {
+                return BaseResponse.error(e.getCode(), e.getMessage());
+            }
+        } catch (BusinessException e) {
+            return BaseResponse.error(e.getCode(), e.getMessage());
+        }
+    }
+
+    @Operation(summary = "上传图书封面", description = "上传图书封面图片并返回图片id")
+    @PostMapping("/upload/cover")
+    public BaseResponse<String> uploadCover(
+            @Parameter(description = "base64图片数据") @RequestBody Map<String, String> requestBody) {
         String base64Data = requestBody.get("img");
         if (StringUtils.isBlank(base64Data)) {
             return BaseResponse.error(ErrorCode.PARAMS_ERROR, "图片数据不能为空");
         }
         try {
             // 保存图片数据到数据库
-            Long imgId = imgService.saveImage(base64Data, id);
+            Long imgId = imgService.saveImage(base64Data, null);
             
             // 更新图书信息
-            BookUpdateRequest updateRequest = new BookUpdateRequest();
-            updateRequest.setId(id);
-            updateRequest.setPicUrl("img/" + imgId); // 设置图片访问路径
-            bookService.updateBook(updateRequest);
+            // BookUpdateRequest updateRequest = new BookUpdateRequest();
+            // updateRequest.setId(id);
+            // updateRequest.setPicUrl("img/" + imgId); // 设置图片访问路径
+            // bookService.updateBook(updateRequest);
             
             return BaseResponse.success("img/" + imgId);
         } catch (BusinessException e) {
@@ -366,7 +419,7 @@ public class BookController {
             return BaseResponse.error(e.getCode(), e.getMessage());
         }
     }
-
+    
     @Operation(summary = "下载图书", description = "根据文件路径下载图书")
     @GetMapping("/download/{id}")
     public void downloadBook(
@@ -376,19 +429,23 @@ public class BookController {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "图书ID不合法");
         }
         try {
-            // 获取图书信息
-            Book book = bookService.getBookById(id);
-            if (book == null || StringUtils.isBlank(book.getFileName())) {
+            // 获取图书id
+            BookFileDTO lpBookFileDTO = bookFileService.getBookFilesNoDeleteByBookId(id);
+            if (lpBookFileDTO == null) {
                 throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "图书文件不存在");
             }
-            
-            // 从URL中提取文件名
-            String fileName = book.getFileName();
+            //根据图书id获取file信息
+            LpFile lpFile = lpFileService.getById(lpBookFileDTO.getFileId());
+            if (lpFile == null) {
+                throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "文件不存在");
+            }
+            // 获取文件名
+            String fileName = lpFile.getFileName();
             
             // 设置响应头
             response.setContentType("application/pdf");
             response.setHeader("Content-Disposition", 
-                "attachment; filename=" + URLEncoder.encode(book.getTitle() + ".pdf", "UTF-8"));
+                "attachment; filename=" + URLEncoder.encode(fileName, "UTF-8"));
             
             // 获取文件流并写入响应
             fileService.downloadFile(fileName, response.getOutputStream());
@@ -399,6 +456,7 @@ public class BookController {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "下载文件失败");
         }
     }
+    
 
     @SuppressWarnings("unchecked")
     @Operation(summary = "提取文本", description = "提取PDF文件中的文本内容")
@@ -442,21 +500,30 @@ public class BookController {
         // 提交异步任务
         CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
             try {
-                Book book = bookService.getBookById(id);
-                if (book == null || StringUtils.isBlank(book.getFileName())) {
+
+
+                BookFileDTO lpBookFileDTO = bookFileService.getBookFilesNoDeleteByBookId(id);   
+                if (lpBookFileDTO == null) {
                     throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "图书文件不存在");
                 }
+
+                LpFile lpFile = lpFileService.getById(lpBookFileDTO.getFileId());
+                if (lpFile == null) {
+                    throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "文件不存在");
+                }
+                
 
                 // 更新进度：检查封面
                 taskProgress.setProgress(10)
                     .setCurrentStep("检查图书封面");
-
+                
+                Book book = bookService.getBookById(id);
                 // 检查是否需要提取封面
                 if (StringUtils.isBlank(book.getPicUrl())) {
                     taskProgress.setCurrentStep("提取PDF封面");
                     try {
                         // 获取PDF文件输入流
-                        InputStream pdfStream = fileService.getFileInputStream(book.getFileName());
+                        InputStream pdfStream = fileService.getFileInputStream(lpFile.getFileName());
                         // 提取PDF首页为图片
                         String base64Image = PDFUtils.exportPageToImage(pdfStream);
                         // 保存图片到数据库
@@ -477,14 +544,14 @@ public class BookController {
                     .setCurrentStep("正在提取PDF文本内容...");
 
                 // 执行文本提取
-                String result = pdfService.extractText(book.getFileName(), id, book.getTitle());
+                String result = pdfService.extractText(lpFile.getFileName(), id, book.getTitle());
 
                 // 更新任务完成状态
                 taskProgress.setStatus(1)
                     .setProgress(100)
                     .setCurrentStep("文本提取完成")
                     //返回图书id、名称、文件名
-                    .setResult(book.getId() + "," + book.getTitle() + "," + book.getFileName());
+                    .setResult(id + "," + book.getTitle() + "," + lpFile.getFileName());
 
                 return result;
             } catch (BusinessException e) {
@@ -527,14 +594,19 @@ public class BookController {
         }
         
         try {
-            // 获取图书信息
-            Book book = bookService.getBookById(id);
-            if (book == null || StringUtils.isBlank(book.getFileName())) {
+            // 获取文件信息
+            BookFileDTO lpBookFileDTO = bookFileService.getBookFilesNoDeleteByBookId(id);
+            if (lpBookFileDTO == null) {
                 return BaseResponse.error(ErrorCode.NOT_FOUND_ERROR, "图书文件不存在");
+            }
+
+            LpFile lpFile = lpFileService.getById(lpBookFileDTO.getFileId());
+            if (lpFile == null) {
+                return BaseResponse.error(ErrorCode.NOT_FOUND_ERROR, "文件不存在");
             }
             
             // 获取预览地址
-            String previewUrl = fileService.getPreviewUrl(book.getFileName());
+            String previewUrl = fileService.getPreviewUrl(lpFile.getFileName());
             return BaseResponse.success(previewUrl); // 返回预览地址
         } catch (BusinessException e) {
             return BaseResponse.error(e.getCode(), e.getMessage());
@@ -605,20 +677,32 @@ public class BookController {
                         taskProgress.setProgress(progress)
                             .setCurrentStep(String.format("正在处理第%d/%d本图书的封面", current, total));
                         
-                        if (book != null && StringUtils.isNotBlank(book.getFileName())) {
-                            try {
-                                InputStream pdfStream = fileService.getFileInputStream(book.getFileName());
-                                String base64Image = PDFUtils.exportPageToImage(pdfStream);
-                                Long imgId = imgService.saveImage(base64Image, book.getId());
-                                BookUpdateRequest updateRequest = new BookUpdateRequest();
-                                updateRequest.setId(book.getId());
-                                updateRequest.setPicUrl("img/" + imgId);
-                                bookService.updateBook(updateRequest);
-                                pdfStream.close();
-                            } catch (Exception e) {
-                                log.error("提取PDF封面失败，图书ID:" + book.getId(), e);
-                            }
+                        //根据图书id获取file信息
+                        LpBookFileDTO lpBookFileDTO = lpBookFileService.getBookFilesNoDeleteByBookId(book.getId());
+                        if (lpBookFileDTO == null) {
+                            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "图书文件不存在");
                         }
+
+                        LpFile lpFile = lpFileService.getById(lpBookFileDTO.getFileId());
+                        if (lpFile == null) {
+                            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "文件不存在");
+                        }
+
+                        //获取文件流
+                        InputStream pdfStream = fileService.getFileInputStream(lpFile.getFileName());
+                        
+                        try {
+                            String base64Image = PDFUtils.exportPageToImage(pdfStream);
+                            Long imgId = imgService.saveImage(base64Image, book.getId());
+                            BookUpdateRequest updateRequest = new BookUpdateRequest();
+                            updateRequest.setId(book.getId());
+                            updateRequest.setPicUrl("img/" + imgId);
+                            bookService.updateBook(updateRequest);
+                            pdfStream.close();
+                        } catch (Exception e) {
+                            log.error("提取PDF封面失败，图书ID:" + book.getId(), e);
+                        }
+                        
                     }
                     
                     // 更新任务完成状态
@@ -634,6 +718,9 @@ public class BookController {
                     taskProgress.setStatus(2)
                         .setErrorMessage(e.getMessage());
                     throw new RuntimeException(e);
+                } catch (IOException e1) {
+                    log.error("读取文件失败", e1);
+                    throw new RuntimeException(e1);
                 }
             });
             
@@ -876,10 +963,21 @@ public class BookController {
                     int progress = (current * 100) / (total * 2); // 总进度分为提取和导入两部分
                     taskProgress.setProgress(progress)
                         .setCurrentStep(String.format("正在提取第%d/%d本图书", current, total));
-                    
+
+                    //根据图书id获取file信息
+                    BookFileDTO lpBookFileDTO = bookFileService.getBookFilesNoDeleteByBookId(book.getId());
+                    if (lpBookFileDTO == null) {
+                        throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "图书文件不存在");
+                    }
+
+                    LpFile lpFile = lpFileService.getById(lpBookFileDTO.getFileId());
+                    if (lpFile == null) {
+                        throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "文件不存在");
+                    }
+
                     try {
-                        if (book != null && StringUtils.isNotBlank(book.getFileName())) {
-                            String result = pdfService.extractText(book.getFileName(), book.getId(), book.getTitle());
+                        if (lpFile != null) {
+                            String result = pdfService.extractText(lpFile.getFileName(), book.getId(), book.getTitle());
                             resultBuilder.append(String.format("图书ID:%d，名称：%s - 提取成功\n", book.getId(), book.getTitle()));
                         }
                     } catch (Exception e) {

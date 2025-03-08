@@ -4,9 +4,13 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import top.lvpi.common.BusinessException;
 import top.lvpi.common.ErrorCode;
 import top.lvpi.config.MinioConfig;
+import top.lvpi.model.dto.file.BookFileDTO;
 import top.lvpi.model.dto.file.FileUploadResult;
 import top.lvpi.model.entity.Book;
+import top.lvpi.model.entity.LpFile;
 import top.lvpi.service.FileService;
+import top.lvpi.service.LpFileService;
+import top.lvpi.service.BookFileService;
 import top.lvpi.service.BookService;
 import top.lvpi.utils.FileUtils;
 import io.minio.*;
@@ -37,6 +41,12 @@ public class FileServiceImpl implements FileService {
 
     @Autowired
     private BookService bookService;
+
+    @Autowired
+    private LpFileService lpFileService;
+
+    @Autowired
+    private BookFileService bookFileService;
 
     @Value("${minio.bucketName}")
     private String bucketName;
@@ -95,15 +105,27 @@ public class FileServiceImpl implements FileService {
      */
     private Book getDuplicateBookInfo(String fileName) {
         try {
-            LambdaQueryWrapper<Book> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(Book::getFileName, fileName);
-            return bookService.getOne(queryWrapper);
+            //根据文件名获取文件信息
+            LpFile lpFile = lpFileService.getOne(new LambdaQueryWrapper<LpFile>().eq(LpFile::getFileName, fileName));
+            if (lpFile == null) {
+                return null;
+            }   
+            //根据文件id获取图书id
+            Long  fileId = lpFile.getFileId();
+            BookFileDTO lpBookFileDTO = bookFileService.getBookFilesNoDeleteByBookId(fileId);
+            if (lpBookFileDTO == null) {
+                return null;
+            }
+            Book lpBook = bookService.getById(lpBookFileDTO.getBookId());
+            if (lpBook == null) {
+                return null;
+            }
+            return lpBook;
         } catch (Exception e) {
             log.error("查询重复文件图书信息失败", e);
             return null;
         }
     }
-
     @Override
     public FileUploadResult uploadFile(MultipartFile file) {
         try {

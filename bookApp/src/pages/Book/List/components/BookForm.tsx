@@ -1,5 +1,5 @@
 import { ModalForm, ProFormText, ProFormTextArea, ProFormSelect, ProFormDigit } from '@ant-design/pro-components';
-import type { BookFormProps, BookItem } from '../data.d';
+import type { BookFormProps, BookItem } from '../data';
 import { message, Row, Col, Upload, TreeSelect, Form, Select } from 'antd';
 import type { UploadProps } from 'antd/es/upload/interface';
 import { InboxOutlined } from '@ant-design/icons';
@@ -163,9 +163,9 @@ const BookForm: React.FC<BookFormProps> = (props) => {
   };
 
   // 加载封面图片
-  const loadCoverImage = async (bookId: number) => {
+  const loadCoverImage = async (imgId: string) => {
     try {
-      const response = await request(`/api/book/cover/${bookId}`);
+      const response = await request(`/api/book/cover/img/${imgId}`);
       if (response.code === 0 && response.data) {
         setCoverUrl(`data:image/jpeg;base64,${response.data}`);
       }
@@ -278,6 +278,25 @@ const BookForm: React.FC<BookFormProps> = (props) => {
     fetchCategories();
   }, []);
 
+  // 加载图书文件
+  const loadBookFile = async (bookId: number) => {
+    try {
+      const response = await request(`/api/book-file/book/${bookId}`);
+      if (response.code === 0 && response.data) {
+        formRef.current?.setFieldsValue({ fileId: response.data[0].fileId });
+      }
+    } catch (error) {
+      console.error('加载图书文件失败:', error);
+      // message.error('加载图书文件失败');
+    }
+  };
+  //组件加载时，加载图书文件
+  useEffect(() => {
+    if (values?.id) {
+      loadBookFile(values.id);
+    }
+  }, [values?.id]);
+
   // 当visible或values变化时重置表单和封面
   useEffect(() => {
     if (!visible) {
@@ -300,7 +319,7 @@ const BookForm: React.FC<BookFormProps> = (props) => {
             setCoverUrl(values.picUrl);
           } else if (values.picUrl.startsWith('img/')) {
             if (values.id) {
-              loadCoverImage(values.id);
+              loadCoverImage(values.picUrl.replace('img/', ''));
             }
           } else {
             setCoverUrl('/api2/'+values.picUrl);
@@ -427,13 +446,13 @@ const BookForm: React.FC<BookFormProps> = (props) => {
 
   // 处理封面上传
   const handleCoverChange = async (base64Data: string) => {
-    if (!values?.id) {
-      message.error('请先保存图书基本信息');
-      return;
-    }
+    // if (!values?.id) {
+    //   message.error('请先保存图书基本信息');
+    //   return;
+    // }
 
     try {
-      const response = await request(`/api/book/upload/cover/${values.id}`, {
+      const response = await request(`/api/book/upload/cover`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -503,31 +522,31 @@ const BookForm: React.FC<BookFormProps> = (props) => {
     accept: '.pdf',
     maxCount: 1,
     showUploadList: true,
-    beforeUpload: (file) => {
-      // 1. 获取当前表单值
-      const formValues = formRef.current?.getFieldsValue();
-      const type = formValues?.type || 1;
+    // beforeUpload: (file) => {
+    //   // 1. 获取当前表单值
+    //   const formValues = formRef.current?.getFieldsValue();
+    //   const type = formValues?.type || 1;
 
-      // 2. 检查必填字段
-      if (!formValues?.title?.trim()) {
-        message.error('请先填写书名后保存，再上传文件');
-        return false;
-      }
+    //   // 2. 检查必填字段
+    //   // if (!formValues?.title?.trim()) {
+    //   //   message.error('请先填写书名后保存，再上传文件');
+    //   //   return false;
+    //   // }
 
-      // 如果是图书类型，检查ISBN
-      if (type === 1 && !formValues?.isbn?.trim()) {
-        message.error('图书类型必须填写ISBN后保存，再上传文件');
-        return false;
-      }
+    //   // 如果是图书类型，检查ISBN
+    //   // if (type === 1 && !formValues?.isbn?.trim()) {
+    //   //   message.error('图书类型必须填写ISBN后保存，再上传文件');
+    //   //   return false;
+    //   // }
 
-      // 3. 检查是否已保存图书信息
-      if (!values?.id) {
-        message.error('请先保存图书基本信息，再上传文件');
-        return false;
-      }
+    //   // 3. 检查是否已保存图书信息
+    //   // if (!values?.id) {
+    //   //   message.error('请先保存图书基本信息，再上传文件');
+    //   //   return false;
+    //   // }
 
-      return true;
-    },
+    //   return true;
+    // },
     customRequest: async (options) => {
       const { file, onProgress, onError, onSuccess } = options;
       const formData = new FormData();
@@ -549,7 +568,7 @@ const BookForm: React.FC<BookFormProps> = (props) => {
               if (response.code === 0) {
                 message.success('文件上传成功');
                 onSuccess?.(response.data);
-                formRef.current?.setFieldValue('fileName', response.data);
+                formRef.current?.setFieldValue('fileId', response.data);
               } else {
                 message.error(response.message || '上传失败');
                 onError?.(new Error(response.message));
@@ -572,8 +591,9 @@ const BookForm: React.FC<BookFormProps> = (props) => {
           onError?.(new Error('上传失败'));
         });
 
-        const bookId = values?.id;
-        xhr.open('POST', `/api/book/upload/${bookId}`, true);
+        // const bookId = values?.id;
+        // xhr.open('POST', `/api/book/upload/${bookId}`, true);
+        xhr.open('POST', `/api/book/upload`, true);
         xhr.setRequestHeader('Accept', 'application/json');
         xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
         const token = localStorage.getItem('token');
@@ -631,9 +651,16 @@ const BookForm: React.FC<BookFormProps> = (props) => {
         }
       });
 
-      await onFinish(processedValues);
-      message.success(values?.id ? '更新成功' : '添加成功');
-      return true;
+      // 检查文件ID是否与原值相同，如果相同则不提交文件ID
+      // if (values?.fileId === processedValues.fileId) {
+      //   delete processedValues.fileId;
+      // }
+
+      const result = await onFinish(processedValues);
+      if (result) {
+        message.success(values?.id ? '更新成功' : '添加成功');
+      }
+      return result;
     } catch (error: any) {
       message.error('操作失败：' + (error.message || '未知错误'));
       return false;
@@ -864,11 +891,12 @@ const BookForm: React.FC<BookFormProps> = (props) => {
             </Upload.Dragger>
           </div>
           <ProFormText
-            name="fileName"
-            label="文件地址"
+            name="fileId"
+            label="文件id"
             disabled
+            placeholder=""
             fieldProps={{
-              addonAfter: values?.fileName ? (
+              addonAfter: values?.fileId ? (
                 <a
                   onClick={async (e) => {
                     e.preventDefault();

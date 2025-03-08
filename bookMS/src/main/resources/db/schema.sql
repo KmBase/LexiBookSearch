@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS lp_book (
 CREATE TABLE IF NOT EXISTS lp_img (
     `id` bigint NOT NULL AUTO_INCREMENT COMMENT '图片ID',
     `img_data` longtext NOT NULL COMMENT '图片base64数据',
-    `book_id` bigint NOT NULL COMMENT '图书ID',
+    `book_id` bigint DEFAULT NULL COMMENT '图书ID',
     `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `modified_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     `is_deleted` tinyint NOT NULL DEFAULT '0' COMMENT '是否删除',
@@ -116,7 +116,7 @@ CREATE TABLE IF NOT EXISTS lp_book_topic (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='书籍与主题关联表';
 
 -- 笔记表 (lp_note)
-CREATE TABLE `lp_note` (
+CREATE TABLE IF NOT EXISTS `lp_note` (
   `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '唯一标识，自增主键',
   `content` TEXT NOT NULL COMMENT '笔记内容',
   `source_name` VARCHAR(255) COMMENT '来源书籍名称',
@@ -138,7 +138,7 @@ CREATE TABLE `lp_note` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='笔记表';
 
 -- 检索报告表 (lp_search_report)
-CREATE TABLE `lp_search_report` (
+CREATE TABLE IF NOT EXISTS `lp_search_report` (
   `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '唯一标识，自增主键',
   `title` VARCHAR(255) NOT NULL COMMENT '报告标题',
   `type` VARCHAR(50) COMMENT '报告类型',
@@ -152,7 +152,7 @@ CREATE TABLE `lp_search_report` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='检索报告表';
 
 -- 笔记与检索报告关系表 (lp_note_report_relate)
-CREATE TABLE `lp_note_report_relate` (
+CREATE TABLE IF NOT EXISTS `lp_note_report_relate` (
   `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '唯一标识，自增主键',
   `note_id` BIGINT NOT NULL COMMENT '笔记ID，外键关联到 lp_note 表',
   `report_id` BIGINT NOT NULL COMMENT '检索报告ID，外键关联到 search_report 表',
@@ -164,3 +164,31 @@ CREATE TABLE `lp_note_report_relate` (
   UNIQUE INDEX `idx_note_report` (`note_id`, `report_id`) -- 创建唯一索引，防止重复关联
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='笔记与检索报告关系表';
 
+CREATE TABLE IF NOT EXISTS `lp_file` (
+  `file_id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '文件ID',
+  `file_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '文件存储名称',
+  `file_original_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '文件原名称',
+  `file_suffix` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '文件扩展名',
+  `file_size` bigint NOT NULL COMMENT '文件大小',
+  `file_url` varchar(1024) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '文件地址',
+  `file_note` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL COMMENT '文件备注',
+  `file_md5` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL COMMENT '文件MD5值',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `modified_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `is_deleted` tinyint NOT NULL DEFAULT '0' COMMENT '逻辑删除（0表示未删除，1表示已删除）',
+  PRIMARY KEY (`file_id`) USING BTREE,
+  INDEX `idx_file_name`(`file_name`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci ROW_FORMAT=DYNAMIC COMMENT='文件信息表';
+
+CREATE TABLE IF NOT EXISTS `lp_book_file` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '关联ID',
+  `book_id` bigint DEFAULT NULL COMMENT '书籍ID',
+  `file_id` bigint NOT NULL COMMENT '文件ID',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `modified_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+  `is_deleted` tinyint NOT NULL DEFAULT '0' COMMENT '是否删除',
+  PRIMARY KEY (`id`),
+  INDEX `idx_book_id`(`book_id`) USING BTREE,
+  INDEX `idx_file_id`(`file_id`) USING BTREE,
+  UNIQUE INDEX `idx_book_file`(`book_id`, `file_id`, `is_deleted`) USING BTREE COMMENT '避免重复关联'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='书籍文件关联表';

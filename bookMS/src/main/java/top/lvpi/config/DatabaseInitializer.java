@@ -35,7 +35,7 @@ public class DatabaseInitializer implements CommandLineRunner {
     private String password;
 
     private static final List<String> REQUIRED_TABLES = Arrays.asList(
-        "lp_user", "lp_book", "lp_book_section", "lp_img", "lp_topic", "lp_book_topic", "lp_note", "lp_search_report", "lp_note_report_relate"  
+        "lp_user", "lp_book", "lp_book_section", "lp_img", "lp_topic", "lp_book_topic", "lp_note", "lp_search_report", "lp_note_report_relate", "lp_book_file", "lp_file"   
     );
 
     @Override

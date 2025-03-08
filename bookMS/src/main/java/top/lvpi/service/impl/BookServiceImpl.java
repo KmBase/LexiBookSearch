@@ -1,6 +1,7 @@
 package top.lvpi.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -11,12 +12,22 @@ import top.lvpi.mapper.BookSectionMapper;
 import top.lvpi.model.dto.book.BookAddRequest;
 import top.lvpi.model.dto.book.BookQueryRequest;
 import top.lvpi.model.dto.book.BookUpdateRequest;
+import top.lvpi.model.dto.file.BookFileDTO;
 import top.lvpi.model.dto.file.FileUploadResult;
 import top.lvpi.model.entity.Book;
+import top.lvpi.model.entity.BookFile;
 import top.lvpi.model.entity.BookSection;
+import top.lvpi.model.entity.BookTopic;
+import top.lvpi.model.entity.LpFile;
 import top.lvpi.model.entity.OpacBookInfo;
 import top.lvpi.model.vo.BookVO;
+import top.lvpi.service.BookFileService;
+import top.lvpi.service.BookSectionEsService;
+import top.lvpi.service.BookSectionService;
 import top.lvpi.service.BookService;
+import top.lvpi.service.BookTopicService;
+import top.lvpi.service.ImgService;
+import top.lvpi.service.LpFileService;
 import top.lvpi.service.TopicService;
 import top.lvpi.utils.BookUtils;
 import top.lvpi.utils.MinioUtils;
@@ -27,6 +38,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -59,7 +71,25 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
     private BookUtils bookUtils;
 
     @Autowired
+    private ImgService imgService;
+
+    @Autowired
+    private LpFileService lpFileService;
+
+    @Autowired
+    private BookFileService bookFileService;
+
+    @Autowired
+    private BookSectionEsService bookSectionEsService;
+
+    @Autowired
     private TopicService topicService;
+
+    @Autowired
+    private BookTopicService bookTopicService;
+
+    @Autowired
+    private BookSectionService bookSectionService;
 
     @Value("${file.upload-dir:/app/filedata}")
     private String uploadDir;
@@ -71,23 +101,199 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
         return bookSectionMapper.selectCount(queryWrapper) > 0;
     }
 
+
     @Override
     public int addBook(BookAddRequest bookAddRequest) {
-        Book book = new Book();
+        LpBook book = new LpBook();
         BeanUtils.copyProperties(bookAddRequest, book);
-        return bookMapper.insert(book);
+        try {
+            int result = bookMapper.insert(book);
+            if (result <= 0) {
+                throw new BusinessException(ErrorCode.SYSTEM_ERROR, "新增图书失败");
+            }
+            //判断是否存在文件id
+            if (bookAddRequest.getFileId() != null) {
+                //关联图书与文件
+                LpBookFile lpBookFile = new LpBookFile();
+                lpBookFile.setBookId(book.getId());
+                lpBookFile.setFileId(bookAddRequest.getFileId());
+                boolean save = lpBookFileService.save(lpBookFile);
+                if (!save) {
+                    throw new BusinessException(ErrorCode.SYSTEM_ERROR, "关联图书与文件失败");
+                }
+            }
+            return result;
+        } catch (Exception e) {
+            log.error("新增图书失败", e);
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "新增图书失败");
+        }
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean deleteBook(Long id) {
-        return bookMapper.deleteById(id) > 0;
+        try {
+            //逻辑删除图书
+            Book book = new Book();
+            book.setId(id);
+            book.setIsDeleted(1);
+            boolean bookResult = this.updateById(book);
+            if (!bookResult) {
+                return false;
+            }
+            //检查是否存在关联图片
+            Book bookData = this.getBookById(id);
+            if (bookData.getPicUrl() != null) {
+                Long imgId = Long.parseLong(bookData.getPicUrl().replace("img/", ""));
+                if (imgId != null) {
+                    boolean imgResult = imgService.removeById(imgId);
+                    if (!imgResult) {
+                        log.error("删除图书封面失败，imgId: " + imgId);
+                        return false;
+                    }
+                }
+            }
+
+            //检查是否存在图书文件关联表，如存在则逻辑删除
+            Long fileAssocCount = bookFileService.count(
+                new LambdaQueryWrapper<BookFile>()
+                    .eq(BookFile::getBookId, id)
+                    .eq(BookFile::getIsDeleted, 0)
+            );
+            if (fileAssocCount > 0) {   
+                //逻辑删除图书文件关联表
+                BookFile bookFile = new BookFile();
+                bookFile.setIsDeleted(1);
+                boolean fileAssocResult = bookFileService.update(bookFile, 
+                new LambdaUpdateWrapper<BookFile>().eq(BookFile::getBookId, id));
+                if (!fileAssocResult) {
+                    log.error("删除图书文件关联表失败，bookId: " + id);
+                    return false;
+                }
+            } else {
+                log.info("No book files found, skipping file deletion");
+            }
+
+            //检查是否存在文件表，如存在则逻辑删除
+            BookFileDTO bookFileDTO = bookFileService.getBookFilesNoDeleteByBookId(id);
+            if (bookFileDTO != null) {
+                LpFile lpFile = new LpFile();
+                lpFile.setIsDeleted(1);
+                boolean fileResult = lpFileService.update(lpFile, 
+                    new LambdaUpdateWrapper<LpFile>().eq(LpFile::getFileId, bookFileDTO.getFileId()));
+                if (!fileResult) {
+                    log.error("删除图书文件失败，fileId: " + bookFileDTO.getFileId());
+                    return false;
+                }
+            } else {
+                log.info("No book files found, skipping file deletion");
+            }
+
+            //检查是否存在图书章节，如存在则逻辑删除
+            Long sectionCount = bookSectionService.count(
+                new LambdaQueryWrapper<BookSection>()
+                    .eq(BookSection::getBookId, id)
+                    .eq(BookSection::getIsDeleted, 0)
+            );
+            if (sectionCount > 0) {
+                //逻辑删除图书章节
+                BookSection bookSection = new BookSection();
+                bookSection.setIsDeleted(1);
+                boolean sectionResult = bookSectionService.update(bookSection, 
+                    new LambdaUpdateWrapper<BookSection>().eq(BookSection::getBookId, id));
+                if (!sectionResult) {
+                    return false;
+                }
+            } else {
+                log.info("No book sections found, skipping section deletion");
+            }
+
+            //检查是否存在图书标签，如存在则逻辑删除
+            Long topicCount = bookTopicService.count(
+                new LambdaQueryWrapper<BookTopic>()
+                    .eq(BookTopic::getBookId, id)
+                    .eq(BookTopic::getIsDeleted, 0)
+            );
+            if (topicCount > 0) {
+                //逻辑删除图书标签
+                BookTopic bookTopic = new BookTopic();
+                bookTopic.setIsDeleted(1);
+                boolean topicResult = bookTopicService.update(bookTopic, 
+                    new LambdaUpdateWrapper<BookTopic>().eq(BookTopic::getBookId, id));
+                if (!topicResult) {
+                    return false;
+                }
+            } else {
+                log.info("No book topics found, skipping topic deletion");
+            }
+            
+            //检查是否存在ES索引，如存在则删除
+            try {
+                //尝试删除ES索引，如果不存在会捕获异常
+                bookSectionEsService.deleteByBookId(id.toString());
+            } catch (Exception e) {
+                //如果删除失败，记录日志但不影响整体流程
+                log.info("No ES index found for bookId: " + id + ", skipping ES index deletion");
+            }
+
+
+
+            return true;
+        } catch (Exception e) {
+            log.error("删除图书失败，id: " + id, e);
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "删除图书失败");
+        }
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean updateBook(BookUpdateRequest bookUpdateRequest) {
-        Book book = new Book();
-        BeanUtils.copyProperties(bookUpdateRequest, book);
-        return bookMapper.updateById(book) > 0;
+        try {
+            // 1. 更新图书基本信息
+            Book book = new Book();
+            BeanUtils.copyProperties(bookUpdateRequest, book);
+            boolean updateResult = bookMapper.updateById(book) > 0;
+            if (!updateResult) {
+                return false;
+            }
+
+            // 2. 处理文件关联关系
+            if (bookUpdateRequest.getFileId() != null) {
+                // 2.0 先检查是否已存在相同的文件关联记录
+                BookFile existingBookFile = bookFileService.getOne(
+                    new LambdaQueryWrapper<BookFile>()
+                        .eq(BookFile::getBookId, book.getId())
+                        .eq(BookFile::getFileId, bookUpdateRequest.getFileId())
+                        .eq(BookFile::getIsDeleted, 0)
+                );
+                
+                // 如果已存在相同的文件关联记录，则不需要进行任何操作
+                if (existingBookFile == null) {
+                    // 2.1 逻辑删除原有的关联记录
+                    BookFile oldBookFile = new BookFile();
+                    oldBookFile.setIsDeleted(1);
+                    bookFileService.update(oldBookFile,
+                        new LambdaUpdateWrapper<BookFile>()
+                            .eq(BookFile::getBookId, book.getId())
+                            .eq(BookFile::getIsDeleted, 0));
+                    
+                    // 2.2 新增新的关联记录
+                    BookFile newBookFile = new BookFile();
+                    newBookFile.setBookId(book.getId());
+                    newBookFile.setFileId(bookUpdateRequest.getFileId());
+                    boolean saveResult = bookFileService.save(newBookFile);
+                    
+                    if (!saveResult) {
+                        throw new BusinessException(ErrorCode.SYSTEM_ERROR, "更新图书文件关联失败");
+                    }
+                }
+            }
+
+            return true;
+        } catch (Exception e) {
+            log.error("更新图书信息失败，bookId: " + bookUpdateRequest.getId(), e);
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "更新图书信息失败");
+        }
     }
 
     @Override
@@ -628,11 +834,14 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
         return list(queryWrapper);
     }
 
+
     @Override
     public IPage<BookVO> listBooksWithTags(BookQueryRequest bookQueryRequest) {
         // 1. 获取原始图书分页数据
         Page<Book> page = new Page<>(bookQueryRequest.getCurrent(), bookQueryRequest.getSize());
         LambdaQueryWrapper<Book> queryWrapper = new LambdaQueryWrapper<>();
+        //获取is_deleted字段为0的记录
+        queryWrapper.eq(Book::getIsDeleted, 0);   
         
         // 添加查询条件
         if (StringUtils.isNotBlank(bookQueryRequest.getTitle())) {
@@ -662,11 +871,14 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
         } else if (StringUtils.isNotBlank(bookQueryRequest.getCategory())) {
             queryWrapper.eq(Book::getCategory, bookQueryRequest.getCategory());
         }
-        
+
         // 添加type字段的查询条件
         if (bookQueryRequest.getType() != null) {
             queryWrapper.eq(Book::getType, bookQueryRequest.getType());
         }
+
+        // 添加按照最后修改时间倒序排列
+        queryWrapper.orderByDesc(Book::getModifiedTime);
         
         IPage<Book> bookPage = bookMapper.selectPage(page, queryWrapper);
         

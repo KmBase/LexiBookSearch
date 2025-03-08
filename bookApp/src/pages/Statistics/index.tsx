@@ -293,8 +293,8 @@ const StatisticsPage: React.FC = () => {
                                 icon={<BookOutlined style={{ fontSize: 24, color: 'white' }} />}
                                 color="#1890ff"
                                 bgColor="#e6f7ff"
-                                secondaryValue={stats.bookCount > 0 ? `近30天: ${Math.round(stats.bookCount * 0.3)}` : '0'}
-                                secondaryText="新增书籍"
+                                // secondaryValue={stats.bookCount > 0 ? `近30天: ${Math.round(stats.bookCount * 0.3)}` : '0'}
+                                // secondaryText="新增书籍"
                                 />
                         </Col>
                         <Col xs={12}>
@@ -305,8 +305,8 @@ const StatisticsPage: React.FC = () => {
                                 icon={<FilePdfOutlined style={{ fontSize: 24, color: 'white' }} />}
                                 color="#27ae60"
                                 bgColor="#f6ffed"
-                                secondaryValue={stats.documentCount > 0 ? `近30天: ${Math.round(stats.documentCount * 0.3)}` : '0'}
-                                secondaryText="新增文档"
+                                // secondaryValue={stats.documentCount > 0 ? `近30天: ${Math.round(stats.documentCount * 0.3)}` : '0'}
+                                // secondaryText="新增文档"
                             />
                         </Col>
                     </Row>
@@ -322,8 +322,8 @@ const StatisticsPage: React.FC = () => {
                                 icon={<FileSearchOutlined style={{ fontSize: 24, color: 'white' }} />}
                                 color="#722ed1"
                                 bgColor="#f5f0ff"
-                                secondaryValue={stats.reportCount > 0 ? `近30天: ${Math.round(stats.reportCount * 0.3)}` : '0'}
-                                secondaryText="新增报告"
+                                // secondaryValue={stats.reportCount > 0 ? `近30天: ${Math.round(stats.reportCount * 0.3)}` : '0'}
+                                // secondaryText="新增报告"
                             />
                         </Col>
                         <Col xs={12}>
@@ -334,8 +334,8 @@ const StatisticsPage: React.FC = () => {
                                 icon={<EditOutlined style={{ fontSize: 24, color: 'white' }} />}
                                 color="#fa8c16"
                                 bgColor="#fff7e6"
-                                secondaryValue={stats.noteCount > 0 ? `平均每书: ${(stats.noteCount / (stats.bookCount || 1)).toFixed(1)}` : '0'}
-                                secondaryText="笔记密度"
+                                // secondaryValue={stats.noteCount > 0 ? `平均每书: ${(stats.noteCount / (stats.bookCount || 1)).toFixed(1)}` : '0'}
+                                // secondaryText="笔记密度"
                             />
                         </Col>
                     </Row>

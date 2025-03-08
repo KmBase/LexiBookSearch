@@ -14,7 +14,9 @@ export interface BookItem {
   source?: string;
   note?: string;
   fileName?: string;
+  fileId?: string;
   picUrl?: string;
+  fileId?: number;
   pageSize?: number;
   type: number;
   status?: number;
@@ -31,4 +33,5 @@ export interface BookFormProps {
   onVisibleChange: (visible: boolean) => void;
   onFinish: (values: BookItem) => Promise<boolean>;
   values?: BookItem;
+  onSuccess?: () => void;
 } 
