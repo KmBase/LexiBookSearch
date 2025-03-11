@@ -171,7 +171,9 @@ const Welcome: React.FC = () => {
               }}>
                 <WarningOutlined />
                 <strong>注意：全文检索基于OCR处理后的文本层，PDF文档导入系统前需经过OCR处理。</strong>
+                <br />
               </div>
+              
             </div>
             
             <div style={{ marginBottom: '16px' }}>
