@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull;
 
 @Data
 @Schema(description = "书籍文件关联DTO")
-public class BookFileDTO {
+public class LpBookFileDTO {
     
     @Schema(description = "关联ID")
     private Long id;

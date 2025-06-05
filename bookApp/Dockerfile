@@ -27,7 +27,8 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 
 # 添加环境变量替换脚本
 COPY docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
+RUN sed -i 's/\r$//' /docker-entrypoint.sh && \
+    chmod +x /docker-entrypoint.sh
 
 # 设置环境变量的默认值
 ENV VITE_API_URL=http://localhost:9090

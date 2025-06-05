@@ -13,7 +13,7 @@ public class GlobalExceptionHandlerConfig {
 
     @ExceptionHandler(NotLoginException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED) // 设置HTTP状态码为401
-    public BaseResponse handleNotLoginException(NotLoginException e) {
+    public BaseResponse<Void> handleNotLoginException(NotLoginException e) {
         return BaseResponse.error(ErrorCode.NOT_LOGIN_ERROR, "未携带token，请登录后重试");
     }
-} 
+}

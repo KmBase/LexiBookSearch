@@ -40,26 +40,26 @@ public class BaseResponse<T> implements Serializable {
     /**
      * 失败
      */
-    public static BaseResponse error(ErrorCode errorCode) {
+    public static <T> BaseResponse<T> error(ErrorCode errorCode) {
         return new BaseResponse<>(errorCode);
     }
 
     /**
      * 失败
      */
-    public static BaseResponse error(int code, String message) {
+    public static <T> BaseResponse<T> error(int code, String message) {
         return new BaseResponse<>(code, null, message);
     }
 
     /**
      * 失败
      */
-    public static BaseResponse error(ErrorCode errorCode, String message) {
+    public static <T> BaseResponse<T> error(ErrorCode errorCode, String message) {
         return new BaseResponse<>(errorCode.getCode(), null, message);
     }
     
     //自定义状态码
-    public static BaseResponse success(int code, String message) {
+    public static <T> BaseResponse<T> success(int code, String message) {
         return new BaseResponse<>(code, null, message);
     }   
-} 
+}

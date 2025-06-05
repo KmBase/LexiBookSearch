@@ -24,5 +24,6 @@ public class FileUploadResult {
         this.duplicateBookId = duplicateBookId;
         this.duplicateBookTitle = duplicateBookTitle;
         this.picUrl = picUrl;
+
     }
 } 

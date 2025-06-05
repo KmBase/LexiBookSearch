@@ -31,6 +31,7 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserMapper userMapper;
 
+    @SuppressWarnings("unused")
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 

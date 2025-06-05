@@ -12,7 +12,7 @@ import top.lvpi.mapper.BookSectionMapper;
 import top.lvpi.model.dto.book.BookAddRequest;
 import top.lvpi.model.dto.book.BookQueryRequest;
 import top.lvpi.model.dto.book.BookUpdateRequest;
-import top.lvpi.model.dto.file.BookFileDTO;
+import top.lvpi.model.dto.file.LpBookFileDTO;
 import top.lvpi.model.dto.file.FileUploadResult;
 import top.lvpi.model.entity.Book;
 import top.lvpi.model.entity.BookFile;
@@ -104,7 +104,7 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
 
     @Override
     public int addBook(BookAddRequest bookAddRequest) {
-        LpBook book = new LpBook();
+        Book book = new Book();
         BeanUtils.copyProperties(bookAddRequest, book);
         try {
             int result = bookMapper.insert(book);
@@ -114,10 +114,10 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
             //判断是否存在文件id
             if (bookAddRequest.getFileId() != null) {
                 //关联图书与文件
-                LpBookFile lpBookFile = new LpBookFile();
-                lpBookFile.setBookId(book.getId());
-                lpBookFile.setFileId(bookAddRequest.getFileId());
-                boolean save = lpBookFileService.save(lpBookFile);
+                BookFile bookFile = new BookFile();
+                bookFile.setBookId(book.getId());
+                bookFile.setFileId(bookAddRequest.getFileId());
+                boolean save = bookFileService.save(bookFile);
                 if (!save) {
                     throw new BusinessException(ErrorCode.SYSTEM_ERROR, "关联图书与文件失败");
                 }
@@ -175,7 +175,7 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
             }
 
             //检查是否存在文件表，如存在则逻辑删除
-            BookFileDTO bookFileDTO = bookFileService.getBookFilesNoDeleteByBookId(id);
+            LpBookFileDTO bookFileDTO = bookFileService.getBookFilesNoDeleteByBookId(id);
             if (bookFileDTO != null) {
                 LpFile lpFile = new LpFile();
                 lpFile.setIsDeleted(1);
@@ -610,7 +610,7 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
                                 log.info("resourcePath: " + basePath + filePath);
                                 FileUploadResult fileUploadResult = minioUtils.uploadFile(file); // 使用MinioUtils替代FileService
                                 log.info("fileUploadResult: " + fileUploadResult);
-                                book.setFileName(fileUploadResult.getFilePath());
+                                book.setFileName(fileUploadResult.getFileName());
                             }
                         } catch (Exception e) {
                             log.error("文件上传失败: ", e);
@@ -677,6 +677,9 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
             }
             case BOOLEAN -> cellValue = String.valueOf(cell.getBooleanCellValue());
             case FORMULA -> cellValue = cell.getCellFormula();
+            case BLANK -> cellValue = ""; // 处理空白单元格
+            case _NONE -> cellValue = ""; // 处理未知类型
+            case ERROR -> cellValue = "ERROR"; // 处理错误单元格
         }
         return cellValue != null ? cellValue.trim() : null;
     }
@@ -981,4 +984,4 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
         
         return updateById(updateBook);
     }
-} 
+}

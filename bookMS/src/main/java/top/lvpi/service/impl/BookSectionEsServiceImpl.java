@@ -58,6 +58,7 @@ public class BookSectionEsServiceImpl implements BookSectionEsService {
     @Autowired
     private ElasticsearchClient esClient;
 
+    @SuppressWarnings("unused")
     @Autowired
     private RestTemplate restTemplate;
 

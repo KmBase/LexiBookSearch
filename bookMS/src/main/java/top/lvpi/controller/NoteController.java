@@ -3,7 +3,6 @@ package top.lvpi.controller;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import top.lvpi.common.BaseResponse;
-import top.lvpi.common.ErrorCode;
 import top.lvpi.model.entity.Note;
 import top.lvpi.model.request.NoteHierarchyRequest;
 import top.lvpi.model.request.BatchNoteHierarchyRequest;

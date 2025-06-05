@@ -77,8 +77,13 @@ public class SearchReportServiceImpl extends ServiceImpl<SearchReportMapper, Sea
         if (existReport == null) {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
         }
-        report.setModifiedTime(LocalDateTime.now());
-        return updateById(report);
+        
+        // 只更新允许修改的字段
+        existReport.setTitle(report.getTitle());
+        existReport.setType(report.getType());
+        existReport.setModifiedTime(LocalDateTime.now());
+        
+        return updateById(existReport);
     }
 
     @Override
@@ -144,7 +149,10 @@ public class SearchReportServiceImpl extends ServiceImpl<SearchReportMapper, Sea
         if (noteIds.isEmpty()) {
             return List.of();
         }
-        return noteMapper.selectBatchIds(noteIds);
+        // 使用selectList替代弃用的selectBatchIds方法
+        LambdaQueryWrapper<Note> noteQueryWrapper = new LambdaQueryWrapper<>();
+        noteQueryWrapper.in(Note::getId, noteIds);
+        return noteMapper.selectList(noteQueryWrapper);
     }
 
     @Override
@@ -450,17 +458,5 @@ public class SearchReportServiceImpl extends ServiceImpl<SearchReportMapper, Sea
                 .orderByDesc(SearchReport::getCreateTime);
         return list(queryWrapper);
     }
-
-    private String convertToAscii(String text) {
-        if (text == null) return "";
-        StringBuilder result = new StringBuilder();
-        for (char c : text.toCharArray()) {
-            if (c < 128) {
-                result.append(c);
-            } else {
-                result.append("[").append((int)c).append("]");
-            }
-        }
-        return result.toString();
-    }
-} 
+    // 删除未使用的convertToAscii方法
+}

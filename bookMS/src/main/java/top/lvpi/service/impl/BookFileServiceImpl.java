@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import top.lvpi.mapper.BookFileMapper;
 import top.lvpi.model.entity.BookFile;
-import top.lvpi.model.dto.file.BookFileDTO;
+import top.lvpi.model.dto.file.LpBookFileDTO;
 import top.lvpi.service.BookFileService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -18,7 +18,7 @@ public class BookFileServiceImpl extends ServiceImpl<BookFileMapper, BookFile> i
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Long saveBookFile(BookFileDTO bookFileDTO) {
+    public Long saveBookFile(LpBookFileDTO bookFileDTO) {
         BookFile bookFile = new BookFile();
         BeanUtils.copyProperties(bookFileDTO, bookFile);
         save(bookFile);
@@ -27,7 +27,7 @@ public class BookFileServiceImpl extends ServiceImpl<BookFileMapper, BookFile> i
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean saveBatchBookFile(List<BookFileDTO> bookFileDTOList) {
+    public boolean saveBatchBookFile(List<LpBookFileDTO> bookFileDTOList) {
         List<BookFile> bookFiles = bookFileDTOList.stream()
                 .map(dto -> {
                     BookFile bookFile = new BookFile();
@@ -48,7 +48,7 @@ public class BookFileServiceImpl extends ServiceImpl<BookFileMapper, BookFile> i
     }
 
     @Override
-    public List<BookFileDTO> getBookFilesByBookId(Long bookId) {
+    public List<LpBookFileDTO> getBookFilesByBookId(Long bookId) {
         if (bookId == null) {
             return List.of();
         }
@@ -60,7 +60,7 @@ public class BookFileServiceImpl extends ServiceImpl<BookFileMapper, BookFile> i
     }
 
     @Override
-    public List<BookFileDTO> getBookFilesByFileId(Long fileId) {
+    public List<LpBookFileDTO> getBookFilesByFileId(Long fileId) {
         if (fileId == null) {
             return List.of();
         }
@@ -71,14 +71,14 @@ public class BookFileServiceImpl extends ServiceImpl<BookFileMapper, BookFile> i
                 .collect(Collectors.toList());
     }
 
-    private BookFileDTO convertToDTO(BookFile bookFile) {
-        BookFileDTO dto = new BookFileDTO();
+    private LpBookFileDTO convertToDTO(BookFile bookFile) {
+        LpBookFileDTO dto = new LpBookFileDTO();
         BeanUtils.copyProperties(bookFile, dto);
         return dto;
     }
 
     @Override
-    public BookFileDTO getBookFilesNoDeleteByBookId(Long bookId) {
+    public LpBookFileDTO getBookFilesNoDeleteByBookId(Long bookId) {
         return getBookFilesByBookId(bookId).stream()
                 // 过滤未删除的文件，isDeleted不为1
                 .filter(dto -> dto.getIsDeleted() != 1)

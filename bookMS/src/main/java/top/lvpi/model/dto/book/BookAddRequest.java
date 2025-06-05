@@ -58,4 +58,15 @@ public class BookAddRequest {
     @Schema(description = "文件类型")
     @NotNull(message = "文件类型不能为空")
     private Integer type;
-} 
+    
+    @Schema(description = "文件ID")
+    private Long fileId;
+
+    public Long getFileId() {
+        return fileId;
+    }
+
+    public void setFileId(Long fileId) {
+        this.fileId = fileId;
+    }
+}

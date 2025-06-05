@@ -79,10 +79,10 @@ public class PdfServiceImpl implements PdfService {
             }
 
             pdfStream.close();
-            return "文本提取成功，共提取 " + sections.size() + " 个章节";
+            return "文本提取成功，共提取 " + (sections != null ? sections.size() : 0) + " 个章节";
         } catch (IOException e) {
             log.error("提取PDF文本失败", e);
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "提取PDF文本失败：" + e.getMessage());
         }
     }
-} 
+}

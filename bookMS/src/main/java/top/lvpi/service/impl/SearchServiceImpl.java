@@ -303,8 +303,9 @@ public class SearchServiceImpl implements SearchService {
             if (result.errors()) {
                 log.error("Bulk indexing had errors");
                 for (BulkResponseItem item : result.items()) {
-                    if (item.error() != null) {
-                        log.error(item.error().reason());
+                    var error = item.error();
+                    if (error != null) {
+                        log.error(error.reason());
                     }
                 }
                 throw new RuntimeException("批量索引失败");
@@ -317,6 +318,10 @@ public class SearchServiceImpl implements SearchService {
 
     private void logSearchResults(SearchResponse<Book> response) {
         TotalHits total = response.hits().total();
+        if (total == null) {
+            log.info("No hits found");
+            return;
+        }
         boolean isExactResult = total.relation() == TotalHitsRelation.Eq;
 
         if (isExactResult) {
@@ -330,8 +335,12 @@ public class SearchServiceImpl implements SearchService {
         List<Book> books = new ArrayList<>();
         for (Hit<Book> hit : response.hits().hits()) {
             Book book = hit.source();
-            log.debug("Found book {} with score {}", book.getId(), hit.score());
-            books.add(book);
+            if (book != null) {
+                log.debug("Found book {} with score {}", book.getId(), hit.score());
+                books.add(book);
+            } else {
+                log.warn("Skipped null book in search result, hit ID: {}", hit.id());
+            }
         }
         return books;
     }
@@ -340,8 +349,12 @@ public class SearchServiceImpl implements SearchService {
         List<Book> books = new ArrayList<>();
         for (Hit<Book> hit : response.hits().hits()) {
             Book book = hit.source();
-            log.debug("Found book {} with score {}", book.getId(), hit.score());
-            books.add(book);
+            if (book != null) {
+                log.debug("Found book {} with score {}", book.getId(), hit.score());
+                books.add(book);
+            } else {
+                log.warn("Skipped null book in template search result, hit ID: {}", hit.id());
+            }
         }
         return books;
     }
@@ -353,6 +366,7 @@ public class SearchServiceImpl implements SearchService {
             .size(0),
             Book.class
         );
-        return response.hits().total().value();
+        TotalHits total = response.hits().total();
+        return total != null ? total.value() : 0;
     }
-} 
+}

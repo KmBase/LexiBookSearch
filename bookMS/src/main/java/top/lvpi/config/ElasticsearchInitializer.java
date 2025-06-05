@@ -1,23 +1,20 @@
 package top.lvpi.config;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.mapping.TypeMapping;
 import co.elastic.clients.elasticsearch.indices.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
-import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
 
 @Slf4j
 @Component
@@ -31,12 +28,10 @@ public class ElasticsearchInitializer implements CommandLineRunner {
     @Autowired
     private ElasticsearchClient elasticsearchClient;
 
-    private final ElasticsearchOperations elasticsearchOperations;
     private final ResourceLoader resourceLoader;
     private final ObjectMapper objectMapper;
 
-    public ElasticsearchInitializer(ElasticsearchOperations elasticsearchOperations, ResourceLoader resourceLoader) {
-        this.elasticsearchOperations = elasticsearchOperations;
+    public ElasticsearchInitializer(ResourceLoader resourceLoader) {
         this.resourceLoader = resourceLoader;
         this.objectMapper = new ObjectMapper();
     }
@@ -62,36 +57,42 @@ public class ElasticsearchInitializer implements CommandLineRunner {
                     .exists(ExistsRequest.of(e -> e.index(indexName)))
                     .value();
 
-                //如果索引存在，则不进行创建
                 if (indexExists) {
-                    log.info("Index {} exists and mapping is up to date", indexName);
+                    // 获取现有索引的映射
+                    GetIndexResponse getIndexResponse = elasticsearchClient.indices().get(
+                        GetIndexRequest.of(g -> g.index(indexName))
+                    );
+                    
+                    // 获取索引状态并进行空检查
+                    IndexState indexState = getIndexResponse.get(indexName);
+                    if (indexState == null) {
+                        log.info("Index state for {} is null, recreating index", indexName);
+                        deleteAndRecreateIndex(indexName, mappingJson);
+                        return;
+                    }
+                    
+                    // 获取映射并进行空检查
+                    TypeMapping mappings = indexState.mappings();
+                    if (mappings == null) {
+                        log.info("Mappings for index {} are null, recreating index", indexName);
+                        deleteAndRecreateIndex(indexName, mappingJson);
+                        return;
+                    }
+                    
+                    // 转换映射为JSON对象进行比较
+                    String currentMappingStr = mappings.toString();
+                    JSONObject currentMappingJson = JSONUtil.parseObj(currentMappingStr.replace("TypeMapping: ", ""));
+                    
+                    // 比较映射结构
+                    if (expectedMappings.equals(currentMappingJson)) {
+                        log.info("Index {} exists and mapping is up to date", indexName);
+                        return;
+                    }
+
+                    log.info("Index {} exists but mapping is different, recreating index", indexName);
+                    deleteAndRecreateIndex(indexName, mappingJson);
                     return;
                 }
-
-                //TODO 可能存在逻辑错误，待进一步核验
-                // if (indexExists) {
-                //     // 获取现有索引的映射
-                //     GetIndexResponse getIndexResponse = elasticsearchClient.indices().get(
-                //         GetIndexRequest.of(g -> g.index(indexName))
-                //     );
-                //     JSONObject currentMappingJson = JSONUtil.parseObj(getIndexResponse.get(indexName).mappings().toString().replace("TypeMapping: ", ""));
-                    
-                //     // 比较映射结构
-                //     if (expectedMappings.equals(currentMappingJson)) {
-                //         log.info("Index {} exists and mapping is up to date", indexName);
-                //         return;
-                //     }
-
-                //     log.info("Index {} exists but mapping is different, recreating index", indexName);
-                    
-                //     // 删除现有索引
-                //     DeleteIndexResponse deleteResponse = elasticsearchClient.indices()
-                //         .delete(DeleteIndexRequest.of(d -> d.index(indexName)));
-                    
-                //     if (!deleteResponse.acknowledged()) {
-                //         throw new RuntimeException("Failed to delete existing index " + indexName);
-                //     }
-                // }
 
                 // 创建索引
                 CreateIndexResponse response = elasticsearchClient.indices()
@@ -125,4 +126,28 @@ public class ElasticsearchInitializer implements CommandLineRunner {
             }
         }
     }
-} 
+    
+    private void deleteAndRecreateIndex(String indexName, String mappingJson) throws Exception {
+        // 删除索引
+        DeleteIndexResponse deleteResponse = elasticsearchClient.indices()
+            .delete(DeleteIndexRequest.of(d -> d.index(indexName)));
+        
+        if (!deleteResponse.acknowledged()) {
+            throw new RuntimeException("Failed to delete existing index " + indexName);
+        }
+        
+        // 创建索引
+        CreateIndexResponse response = elasticsearchClient.indices()
+            .create(c -> c
+                .index(indexName)
+                .withJson(new java.io.StringReader(mappingJson))
+            );
+
+        if (response.acknowledged()) {
+            log.info("Successfully recreated index {}", indexName);
+        } else {
+            log.error("Failed to recreate index {}", indexName);
+            throw new RuntimeException("Failed to recreate index " + indexName);
+        }
+    }
+}

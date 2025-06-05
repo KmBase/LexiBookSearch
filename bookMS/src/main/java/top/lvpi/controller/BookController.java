@@ -19,7 +19,7 @@ import cn.hutool.core.lang.UUID;
 
 import top.lvpi.service.ImgService;
 import top.lvpi.service.LpFileService;
-import top.lvpi.model.dto.file.BookFileDTO;
+import top.lvpi.model.dto.file.LpBookFileDTO;
 import top.lvpi.model.dto.file.FileUploadResult;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -303,11 +303,11 @@ public class BookController {
             // 更新图书信息
             BookUpdateRequest updateRequest = new BookUpdateRequest();
             updateRequest.setId(id);
-            updateRequest.setFileName(result.getFilePath());
+            updateRequest.setFileName(result.getFileName());
             updateRequest.setPageSize(result.getPageCount());
             bookService.updateBook(updateRequest);
             
-            return BaseResponse.success(result.getFilePath());
+            return BaseResponse.success(result.getFileName());
         } catch (BusinessException e) {
             return BaseResponse.error(e.getCode(), e.getMessage());
         }
@@ -430,7 +430,7 @@ public class BookController {
         }
         try {
             // 获取图书id
-            BookFileDTO lpBookFileDTO = bookFileService.getBookFilesNoDeleteByBookId(id);
+            LpBookFileDTO lpBookFileDTO = bookFileService.getBookFilesNoDeleteByBookId(id);
             if (lpBookFileDTO == null) {
                 throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "图书文件不存在");
             }
@@ -458,7 +458,6 @@ public class BookController {
     }
     
 
-    @SuppressWarnings("unchecked")
     @Operation(summary = "提取文本", description = "提取PDF文件中的文本内容")
     @PostMapping("/extract/{id}")
     public BaseResponse<String> extractText(
@@ -502,7 +501,7 @@ public class BookController {
             try {
 
 
-                BookFileDTO lpBookFileDTO = bookFileService.getBookFilesNoDeleteByBookId(id);   
+                LpBookFileDTO lpBookFileDTO = bookFileService.getBookFilesNoDeleteByBookId(id);   
                 if (lpBookFileDTO == null) {
                     throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "图书文件不存在");
                 }
@@ -595,7 +594,7 @@ public class BookController {
         
         try {
             // 获取文件信息
-            BookFileDTO lpBookFileDTO = bookFileService.getBookFilesNoDeleteByBookId(id);
+            LpBookFileDTO lpBookFileDTO = bookFileService.getBookFilesNoDeleteByBookId(id);
             if (lpBookFileDTO == null) {
                 return BaseResponse.error(ErrorCode.NOT_FOUND_ERROR, "图书文件不存在");
             }
@@ -678,7 +677,7 @@ public class BookController {
                             .setCurrentStep(String.format("正在处理第%d/%d本图书的封面", current, total));
                         
                         //根据图书id获取file信息
-                        LpBookFileDTO lpBookFileDTO = lpBookFileService.getBookFilesNoDeleteByBookId(book.getId());
+                        LpBookFileDTO lpBookFileDTO = bookFileService.getBookFilesNoDeleteByBookId(book.getId());
                         if (lpBookFileDTO == null) {
                             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "图书文件不存在");
                         }
@@ -965,7 +964,7 @@ public class BookController {
                         .setCurrentStep(String.format("正在提取第%d/%d本图书", current, total));
 
                     //根据图书id获取file信息
-                    BookFileDTO lpBookFileDTO = bookFileService.getBookFilesNoDeleteByBookId(book.getId());
+                    LpBookFileDTO lpBookFileDTO = bookFileService.getBookFilesNoDeleteByBookId(book.getId());
                     if (lpBookFileDTO == null) {
                         throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "图书文件不存在");
                     }
@@ -977,8 +976,8 @@ public class BookController {
 
                     try {
                         if (lpFile != null) {
-                            String result = pdfService.extractText(lpFile.getFileName(), book.getId(), book.getTitle());
-                            resultBuilder.append(String.format("图书ID:%d，名称：%s - 提取成功\n", book.getId(), book.getTitle()));
+                                   String result = pdfService.extractText(lpFile.getFileName(), book.getId(), book.getTitle());
+                                   resultBuilder.append(String.format("图书ID:%d，名称：%s - %s\n", book.getId(), book.getTitle(), result));
                         }
                     } catch (Exception e) {
                         resultBuilder.append(String.format("图书ID:%d，名称：%s - 提取失败: %s\n", book.getId(), book.getTitle(), e.getMessage()));
@@ -1008,7 +1007,11 @@ public class BookController {
                             bookService.updateBook(updateRequest);
                         }
                     } catch (Exception e) {
-                        resultBuilder.append(String.format("图书ID:%d，名称：%s - 导入ES失败: %s\n", book.getId(), book.getTitle(), e.getMessage()));
+                        if (book != null) {
+                            resultBuilder.append(String.format("图书ID:%d，名称：%s - 导入ES失败: %s\n", book.getId(), book.getTitle(), e.getMessage()));
+                        } else {
+                            resultBuilder.append(String.format("图书ID:未知，名称：未知 - 导入ES失败: %s\n", e.getMessage()));
+                        }
                     }
                 }
                 
@@ -1161,4 +1164,4 @@ public class BookController {
 
 
 
-} 
+}

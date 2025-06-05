@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import top.lvpi.common.BusinessException;
 import top.lvpi.common.ErrorCode;
 import top.lvpi.config.MinioConfig;
-import top.lvpi.model.dto.file.BookFileDTO;
+import top.lvpi.model.dto.file.LpBookFileDTO;
 import top.lvpi.model.dto.file.FileUploadResult;
 import top.lvpi.model.entity.Book;
 import top.lvpi.model.entity.LpFile;
@@ -112,7 +112,7 @@ public class FileServiceImpl implements FileService {
             }   
             //根据文件id获取图书id
             Long  fileId = lpFile.getFileId();
-            BookFileDTO lpBookFileDTO = bookFileService.getBookFilesNoDeleteByBookId(fileId);
+            LpBookFileDTO lpBookFileDTO = bookFileService.getBookFilesNoDeleteByBookId(fileId);
             if (lpBookFileDTO == null) {
                 return null;
             }
