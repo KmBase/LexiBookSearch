@@ -21,6 +21,20 @@ CREATE TABLE IF NOT EXISTS lp_user (
     INDEX idx_user_account(user_account)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 COMMENT '用户表' COLLATE = utf8mb4_unicode_ci;
 
+-- 角色基本信息
+CREATE TABLE `lp_role` (
+  `role_id` bigint(20) NOT NULL,
+  `role_code` varchar(50) NOT NULL COMMENT '角色编码',
+  `role_name` varchar(100) NOT NULL COMMENT '角色名称',
+  `role_description` varchar(255) DEFAULT NULL COMMENT '角色描述',
+  `role_status` tinyint(4) DEFAULT '0' COMMENT '角色状态：0-正常，1-禁用',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `modified_time` datetime DEFAULT NULL COMMENT '修改时间',
+  `is_deleted` tinyint(4) DEFAULT '0' COMMENT '是否删除',
+  PRIMARY KEY (`role_id`),
+  UNIQUE KEY `uk_role_code` (`role_code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色表';
+
 -- 图书表
 CREATE TABLE IF NOT EXISTS lp_book (
   id bigint UNSIGNED NOT NULL COMMENT '书籍的唯一标识符',

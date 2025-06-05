@@ -5,7 +5,7 @@ import lombok.ToString;
 
 /**
  * @ClassName: OpacBookInfo
- * @Description: TODO
+ * @Description: OpacBookInfo
  * @Author well
  * @Date: 2024/11/21 15:13
  * @Version 1.0

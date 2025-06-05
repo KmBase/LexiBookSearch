@@ -1,4 +1,4 @@
--- 插入初始管理员用户 (密码: admin123)
+-- 插入初始管理员用户 (密码: admin1234)
 INSERT INTO `lp_user` (`user_id`, `user_account`, `user_password`, `user_name`, `user_email`, `user_login_num`, `user_avatar_id`, `user_role`, `user_state`, `create_time`, `modified_time`, `is_deleted`) 
 VALUES (1882479475478806529, 'admin', '$2a$10$hqjJ5y1/6kxuV3fk0J5PpepzFo3d44//HUAfzLf/j/jmVG5afrGBW', 'admin', 'admin@126.com', 0, NULL, 'admin', 0, NOW(), NOW(), 0);
 
